@@ -1,0 +1,91 @@
+#clear_last_mile{
+	color:#3399cc;
+	font-size:11px;
+	display:none;
+}
+#jet_name_lastmile{
+	display:inline-block;
+	font-weight:bold;
+	font-size:14px;
+}
+.jet_shipping_option > a{
+	display:inline-block;
+	background:#d6d4d4;
+	padding:5px 15px;
+	margin-top:10px;
+}
+#lastmile_lightbox h3{
+	font-size:18px;
+	margin:0 0 10px 0;
+}
+.jet_getDates{
+	padding:5px 10px;
+}
+.jet_getDates:nth-child(2n+1){
+    background: rgba(0, 0, 0, 0.05) none repeat scroll 0 0;
+	padding:5px 10px;
+}
+.jet_getDates a{
+	color:#3399cc;
+	cursor:pointer;
+}
+#lastmile_lightbox_content{
+	min-width:1000px;
+}
+#jet_address{
+	border:1px solid #d6d4d4;
+}
+#jet_submit_address{
+	display:inline-block;
+	background:#d6d4d4;
+	padding:5px 15px;
+	border:0;
+}
+.jet_map_pin button{
+	display:inline-block;
+	background:#d6d4d4;
+	padding:5px 15px;
+	border:0;
+}
+#lastmile_lightbox_map{
+	width:100%;
+	height:350px;
+	margin-top:10px;
+}
+.jet_shipping_options{
+	display:none;
+	margin:0 0 10px 0;
+}
+.jet_special_price{
+	color: #ff6402;
+    font-size: 11px;
+    font-style: italic;
+}
+.deliver_dates tr:nth-child(2n+1) {
+    background: rgba(0, 0, 0, 0.05) none repeat scroll 0 0;
+}
+.deliver_dates td {
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 12px;
+    padding: 7px 0 7px 12px;
+}
+.deliver_dates tr td:last-child{
+	border-right:0;
+}
+.deliver_dates theader{
+	font-weight:bold;
+}
+.deliver_dates tr td a{
+	color:#3399cc;
+	cursor:pointer;
+}
+.opening_hours td{
+	padding:5px 10px 5px 0px;
+	font-size:11px;
+	vertical-align:top;
+}
+.jet_map_pin h3{
+	margin:0 0 5px 0;
+	font-size:16px;
+	
+}
