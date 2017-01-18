@@ -1,1 +1,1 @@
-# Jet Verzendt connector
+# KeenDelivery connector
