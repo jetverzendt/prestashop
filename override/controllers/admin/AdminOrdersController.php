@@ -23,11 +23,11 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
-
 class AdminOrdersController extends AdminOrdersControllerCore
 {
 	public function __construct()
 	{
+
 		$this->bootstrap = true;
 		$this->table = 'order';
 		$this->className = 'Order';
@@ -196,13 +196,14 @@ class AdminOrdersController extends AdminOrdersControllerCore
 		$this->bulk_actions = array(
 			'updateOrderStatus' => array('text' => $this->l('Change Order Status'), 'icon' => 'icon-refresh'),
 			'updatePrintLabels' => array('text' => $this->l('Print labels'), 'icon' => 'icon-print'),
-			'updateShippingStatus' => array('text' => $this->l('Create shipment with ...'), 'icon' => 'icon-truck'),
-			'updateShippingStatusDefault' => array('text' => $this->l('Create shipment with default selection'), 'icon' => 'icon-truck')
+            'updateShippingStatus' => array('text' => $this->l('Create shipment'), 'icon' => 'icon-truck'),
+            'updateShippingStatusDefault' => array('text' => $this->l('Create shipment last-mile'), 'icon' => 'icon-truck')
 		);
 
 		AdminController::__construct();
 	}
 
+	//handle bulk button input
 	public function renderList()
 	{
 		if (Tools::isSubmit('submitBulkupdateOrderStatus'.$this->table))
@@ -217,41 +218,38 @@ class AdminOrdersController extends AdminOrdersControllerCore
 		}
 		if (Tools::isSubmit('submitBulkupdateShippingStatus'.$this->table))
 		{
-			$novijetverzendt = new Novijetverzendt();
+			$novijetverzendt = new Keendelivery();
 			$novijetverzendt_text = $novijetverzendt->getShipmentInfoList();
 
 			if (Tools::getIsset('cancel'))
 				Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token);
 
 			$this->tpl_list_vars['updateShippingStatus_mode'] = true;
-			//$this->tpl_list_vars['shipping_statuses'] = $shipping_array;
 			$this->tpl_list_vars['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
 			$this->tpl_list_vars['POST'] = $_POST;
 			$this->tpl_list_vars['novijetverzendt_text'] = $novijetverzendt_text;
 			$this->tpl_list_vars['novijetverzendt_default'] = 0;
 		}
 		if (Tools::isSubmit('submitBulkupdateShippingStatusDefault'.$this->table))
-		{
-			$novijetverzendt = new Novijetverzendt();
-			$novijetverzendt_text = $novijetverzendt->getShipmentInfoListDefault();
-			if (Tools::getIsset('cancel'))
-				Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token);
+    {
+        $novijetverzendt = new Keendelivery();
+        $novijetverzendt_text = $novijetverzendt->getShipmentInfoListDefault();
+        if (Tools::getIsset('cancel'))
+            Tools::redirectAdmin(self::$currentIndex.'&token='.$this->token);
 
-			$this->tpl_list_vars['updateShippingStatus_mode'] = true;
-			//$this->tpl_list_vars['shipping_statuses'] = $shipping_array;
-			$this->tpl_list_vars['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
-			$this->tpl_list_vars['POST'] = $_POST;
-			$this->tpl_list_vars['novijetverzendt_text'] = $novijetverzendt_text;
-			$this->tpl_list_vars['novijetverzendt_default'] = 1;
-			//$this->processBulkUpdateShippingStatusDefault();
-		}
+        $this->tpl_list_vars['updateShippingStatus_mode'] = true;
+        //$this->tpl_list_vars['shipping_statuses'] = $shipping_array;
+        $this->tpl_list_vars['REQUEST_URI'] = $_SERVER['REQUEST_URI'];
+        $this->tpl_list_vars['POST'] = $_POST;
+        $this->tpl_list_vars['novijetverzendt_text'] = $novijetverzendt_text;
+        $this->tpl_list_vars['novijetverzendt_default'] = 1;
+    }
 		if (Tools::isSubmit('submitBulkupdatePrintLabels'.$this->table))
 			$this->processBulkPrintLabels();
 		return AdminController::renderList();
 	}
 	public function processBulkUpdateShippingStatus()
 	{
-		$options = array();
 		$errors = 0;
 		if (Tools::isSubmit('submitUpdateShippingStatus'))
 		{
@@ -259,116 +257,21 @@ class AdminOrdersController extends AdminOrdersControllerCore
 				$this->errors[] = Tools::displayError('You do not have permission to edit this.');
 			else
 			{
-				// print_r($_POST);
 				$this->errors = '';
+                $post = $_POST;
 				foreach (Tools::getValue('orderBox') as $id_order)
 				{
-					$options['shipping_option'] = $_POST['shipping_option'][$id_order];
-					if (Tools::getIsset('option_1_quantity'))
-					{
-						$val = Tools::getValue('option_1_quantity');
-						$options['option_1_quantity'] = $val[$id_order];
-					}
-					else $options['option_1_quantity'] = '';
-					if (Tools::getIsset('option_1_reference'))
-					{
-						$val = Tools::getValue('option_1_reference');
-						$options['option_1_reference'] = $val[$id_order];
-					}
-					else $options['option_1_reference'] = '';
-					if (Tools::getIsset('shipping_option_type_1'))
-					{
-						$val = Tools::getValue('shipping_option_type_1');
-						$options['shipping_option_type_1'] = $val[$id_order];
-					}
-					else $options['shipping_option_type_1'] = '';
-					if (Tools::getIsset('option_1_mail'))
-					{
-						$val = Tools::getValue('option_1_mail');
-						$options['option_1_mail'] = $val[$id_order];
-					}
-					else $options['option_1_mail'] = '';
-					if (Tools::getIsset('option_1_saturday_delivery'))
-					{
-						$val = Tools::getValue('option_1_saturday_delivery');
-						$options['option_1_saturday_delivery'] = $val[$id_order];
-					}
-					else $options['option_1_saturday_delivery'] = '';
-					if (Tools::getIsset('option_1_pickup_date'))
-					{
-						$val = Tools::getValue('option_1_pickup_date');
-						$options['option_1_pickup_date'] = $val[$id_order];
-					}
-					else $options['option_1_pickup_date'] = '';
-					if (Tools::getIsset('option_1_weight'))
-					{
-						$val = Tools::getValue('option_1_weight');
-						$options['option_1_weight'] = $val[$id_order];
-					}
-					else $options['option_1_weight'] = '';
-					if (Tools::getIsset('option_1_amount'))
-					{
-						$val = Tools::getValue('option_1_amount');
-						$options['option_1_amount'] = $val[$id_order];
-					}
-					else $options['option_1_amount'] = '';
-					if (Tools::getIsset('option_2_quantity'))
-					{
-						$val = Tools::getValue('option_2_quantity');
-						$options['option_2_quantity'] = $val[$id_order];
-					}
-					else $options['option_2_quantity'] = '';
-					if (Tools::getIsset('option_2_reference'))
-					{
-						$val = Tools::getValue('option_2_reference');
-						$options['option_2_reference'] = $val[$id_order];
-					}
-					else $options['option_2_reference'] = '';
-					if (Tools::getIsset('option_2_weight'))
-					{
-						$val = Tools::getValue('option_2_weight');
-						$options['option_2_weight'] = $val[$id_order];
-					}
-					else $options['option_2_weight'] = '';
-					if (Tools::getIsset('shipping_option_type_2'))
-					{
-						$val = Tools::getValue('shipping_option_type_2');
-						$options['shipping_option_type_2'] = $val[$id_order];
-					}
-					else $options['shipping_option_type_2'] = '';
-					if (Tools::getIsset('option_2_insured_value'))
-					{
-						$val = Tools::getValue('option_2_insured_value');
-						$options['option_2_insured_value'] = $val[$id_order];
-					}
-					else $options['option_2_insured_value'] = '';
-					if (Tools::getIsset('option_2_pickup_date'))
-					{
-						$val = Tools::getValue('option_2_pickup_date');
-						$options['option_2_pickup_date'] = $val[$id_order];
-					}
-					else $options['option_2_pickup_date'] = '';
-					if (Tools::getIsset('option_2_amount'))
-					{
-						$val = Tools::getValue('option_2_amount');
-						$options['option_2_amount'] = $val[$id_order];
-					}
-					else $options['option_2_amount'] = '';
-					if (Tools::getIsset('parcelshop_id'))
-					{
-						$val = Tools::getValue('parcelshop_id');
-						$options['parcelshop_id'] = $val[$id_order];
-					}
-					else $options['parcelshop_id'] = '';
-					if (Tools::getIsset('option_3_weight'))
-					{
-						$val = Tools::getValue('option_3_weight');
-						$options['option_3_weight'] = $val[$id_order];
-					}
-					else $options['option_3_weight'] = '';
-					$novijetverzendt = new Novijetverzendt();
-					$errs = array();
+				    $options = array();
+                    //$options = $post;
+                    foreach ($_POST as $key => $value) {
+                        $options[$key] = isset($post[$key]) ? $value : '';
+                    }
+                    //unset($options['orderBox']);
+                    unset($options['submitUpdateShippingStatusDefault']);
+
+					$novijetverzendt = new Keendelivery();
 					$errs = $novijetverzendt->addShipment((int)$id_order, $options);
+
 					if (count($errs) > 0)
 					{
 						if (is_array($errs))
@@ -377,15 +280,69 @@ class AdminOrdersController extends AdminOrdersControllerCore
 								$this->errors .= $novijetverzendt->l('Order').' '.$id_order.' - '.$item.'<br>';
 								$errors = 1;
 							}
-						//else
-						//	$this->errors .= $novijetverzendt->l('Order').' '.$id_order.' - '.$errs."<br>";
 					}
 				}
 			}
-			if ($errors == 0)
-				Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+			if ($errors == 0) {
+                Tools::redirectAdmin(self::$currentIndex . '&conf=4&token=' . $this->token);
+            }
 		}
+        if (Tools::isSubmit('submitUpdateAutoShippingStatus'))
+        {
+            $options = array();
+            foreach ($_POST as $key => $value) {
+                $options[$key] = isset($_POST[$key]) ? $value : '';
+            }
+            //unset($options['orderBox']);
+            unset($options['submitUpdateAutoShippingStatus']);
+
+            Configuration::updateValue('KEENDELIVERY_AUTOPROCESSENABLE', true);
+            Configuration::updateValue('KEENDELIVERY_AUTOPROCESSVALUE', json_encode($options));
+            Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+        }
 	}
+
+
+    public function processBulkUpdateShippingStatusDefault()
+    {
+        $errors = 0;
+        if (Tools::isSubmit('submitUpdateShippingStatusDefault'))
+        {
+            if ($this->tabAccess['edit'] !== '1')
+                $this->errors[] = Tools::displayError('You do not have permission to edit this.');
+            else
+            {
+                $post = $_POST;
+                unset($post['orderBox']);
+                unset($post['id_order']);
+                unset($post['is_lastmile']);
+                unset($post['submitUpdateShippingStatusDefault']);
+                $this->errors = '';
+                foreach (Tools::getValue('orderBox') as $id_order)
+                {
+                    $string = '';
+                    $options = array();
+                    foreach ($_POST['shipment'][$id_order] as $key => $value) {
+                        $options[$key] = isset($post['shipment'][$id_order][$key]) ? $value : '';
+                    }
+                    $novijetverzendt = new Keendelivery();
+                    $errs = array();
+                    $errs = $novijetverzendt->addShipment((int)$id_order, $options);
+                    if (count($errs) > 0)
+                    {
+                        if (is_array($errs))
+                            foreach ($errs as $item)
+                            {
+                                $this->errors .= $novijetverzendt->l('Order').' '.$id_order.' - '.$item.'<br>';
+                                $errors = 1;
+                            }
+                    }
+                }
+            }
+            if ($errors == 0)
+                Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
+        }
+    }
 
 	public function processBulkPrintLabels()
 	{
@@ -395,15 +352,11 @@ class AdminOrdersController extends AdminOrdersControllerCore
 		else
 		{
 			$api_key = Configuration::get('JETVERZENDT_CLIENT_ID');
-			//$shared_secret = Configuration::get('JETVERZENDT_CLIENT_SECRET');
 			$label_type = Configuration::get('JETVERZENDT_CLIENT_LABEL');
-			foreach (Tools::getValue('orderBox') as $id_order)
-			{
+			foreach (Tools::getValue('orderBox') as $id_order){
 				$shippings = Db::getInstance()->executeS('
-					SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt` WHERE id_order="'.(int)$id_order.'"');
-				if (count($shippings) > 0)
-				{
-					//$selected_shipping = $shippings[0]['shipping_type'];
+					SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.(int)$id_order.'"');
+				if (count($shippings) > 0){
 					$id = $shippings[0]['shipment_id'];
 					$id_array[] = $id;
 				}
@@ -417,11 +370,10 @@ class AdminOrdersController extends AdminOrdersControllerCore
 			);
 
 			$testmode = Configuration::get('JETVERZENDT_STATUS');
-			if ($testmode == 0) $apiurl = 'http://testportal.jetverzendt.nl';
-			else $apiurl = 'https://portal.jetverzendt.nl';
+			if ($testmode == 0) $apiurl = 'http://testportal.keendelivery.com';
+			else $apiurl = 'https://portal.keendelivery.com';
 			$ch = curl_init($apiurl.'/api/v2/label?api_token='.$api_key);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			//curl_setopt($ch, CURLOPT_USERPWD, $api_key.':'.$shared_secret);
 			curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $label_data);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -433,189 +385,36 @@ class AdminOrdersController extends AdminOrdersControllerCore
 			);
 			$res = curl_exec($ch);
 			$result = Tools::jsonDecode($res);
-			chmod(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), 0777);
-			file_put_contents(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
+			chmod(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type), 0777);
+			file_put_contents(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
 			header('Content-disposition: attachment; filename=label.'.Tools::strtolower($label_type));
 			header('Content-type: application/'.Tools::strtolower($label_type));
-			readfile(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type));
-			unlink(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type));
-			/*
-			chmod(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), 777);
-			file_put_contents(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
-			ob_flush();
-			ob_start();
-			header('Content-disposition : attachment; filename=label.'.Tools::strtolower($label_type));
-			header("Content-type: application/".Tools::strtolower($label_type));
-			readfile(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type));
-			*/
-			// End of label collection
+			readfile(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type));
+			unlink(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type));
 		}
 		if (!count($this->errors))
 			Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
 	}
 
-	public function processBulkUpdateShippingStatusDefault()
-	{
-		$options = array();
-		$errors = 0;
-		if (Tools::isSubmit('submitUpdateShippingStatusDefault'))
-		{
-			if ($this->tabAccess['edit'] !== '1')
-				$this->errors[] = Tools::displayError('You do not have permission to edit this.');
-			else
-			{
-				// print_r($_POST);
-				$this->errors = '';
-				foreach (Tools::getValue('orderBox') as $id_order)
-				{
-					$options['shipping_option'] = $_POST['shipping_option'][$id_order];
-					if (Tools::getIsset('option_1_quantity'))
-					{
-						$val = Tools::getValue('option_1_quantity');
-						$options['option_1_quantity'] = $val[$id_order];
-					}
-					else $options['option_1_quantity'] = '';
-					if (Tools::getIsset('option_1_reference'))
-					{
-						$val = Tools::getValue('option_1_reference');
-						$options['option_1_reference'] = $val[$id_order];
-					}
-					else $options['option_1_reference'] = '';
-					if (Tools::getIsset('shipping_option_type_1'))
-					{
-						$val = Tools::getValue('shipping_option_type_1');
-						$options['shipping_option_type_1'] = $val[$id_order];
-					}
-					else $options['shipping_option_type_1'] = '';
-					if (Tools::getIsset('option_1_mail'))
-					{
-						$val = Tools::getValue('option_1_mail');
-						$options['option_1_mail'] = $val[$id_order];
-					}
-					else $options['option_1_mail'] = '';
-					if (Tools::getIsset('option_1_saturday_delivery'))
-					{
-						$val = Tools::getValue('option_1_saturday_delivery');
-						$options['option_1_saturday_delivery'] = $val[$id_order];
-					}
-					else $options['option_1_saturday_delivery'] = '';
-					if (Tools::getIsset('option_1_pickup_date'))
-					{
-						$val = Tools::getValue('option_1_pickup_date');
-						$options['option_1_pickup_date'] = $val[$id_order];
-					}
-					else $options['option_1_pickup_date'] = '';
-					if (Tools::getIsset('option_1_weight'))
-					{
-						$val = Tools::getValue('option_1_weight');
-						$options['option_1_weight'] = $val[$id_order];
-					}
-					else $options['option_1_weight'] = '';
-					if (Tools::getIsset('option_1_amount'))
-					{
-						$val = Tools::getValue('option_1_amount');
-						$options['option_1_amount'] = $val[$id_order];
-					}
-					else $options['option_1_amount'] = '';
-					if (Tools::getIsset('option_2_quantity'))
-					{
-						$val = Tools::getValue('option_2_quantity');
-						$options['option_2_quantity'] = $val[$id_order];
-					}
-					else $options['option_2_quantity'] = '';
-					if (Tools::getIsset('option_2_reference'))
-					{
-						$val = Tools::getValue('option_2_reference');
-						$options['option_2_reference'] = $val[$id_order];
-					}
-					else $options['option_2_reference'] = '';
-					if (Tools::getIsset('option_2_weight'))
-					{
-						$val = Tools::getValue('option_2_weight');
-						$options['option_2_weight'] = $val[$id_order];
-					}
-					else $options['option_2_weight'] = '';
-					if (Tools::getIsset('shipping_option_type_2'))
-					{
-						$val = Tools::getValue('shipping_option_type_2');
-						$options['shipping_option_type_2'] = $val[$id_order];
-					}
-					else $options['shipping_option_type_2'] = '';
-					if (Tools::getIsset('option_2_insured_value'))
-					{
-						$val = Tools::getValue('option_2_insured_value');
-						$options['option_2_insured_value'] = $val[$id_order];
-					}
-					else $options['option_2_insured_value'] = '';
-					if (Tools::getIsset('option_2_pickup_date'))
-					{
-						$val = Tools::getValue('option_2_pickup_date');
-						$options['option_2_pickup_date'] = $val[$id_order];
-					}
-					else $options['option_2_pickup_date'] = '';
-					if (Tools::getIsset('option_2_amount'))
-					{
-						$val = Tools::getValue('option_2_amount');
-						$options['option_2_amount'] = $val[$id_order];
-					}
-					else $options['option_2_amount'] = '';
-					if (Tools::getIsset('parcelshop_id'))
-					{
-						$val = Tools::getValue('parcelshop_id');
-						$options['parcelshop_id'] = $val[$id_order];
-					}
-					else $options['parcelshop_id'] = '';
-					if (Tools::getIsset('option_3_weight'))
-					{
-						$val = Tools::getValue('option_3_weight');
-						$options['option_3_weight'] = $val[$id_order];
-					}
-					else $options['option_3_weight'] = '';
-					$novijetverzendt = new Novijetverzendt();
-					$errs = array();
-					$errs = $novijetverzendt->addShipment((int)$id_order, $options);
-					if (count($errs) > 0)
-					{
-						if (is_array($errs))
-							foreach ($errs as $item)
-							{
-								$this->errors .= $novijetverzendt->l('Order').' '.$id_order.' - '.$item.'<br>';
-								$errors = 1;
-							}
-						//else
-						//	$this->errors .= $novijetverzendt->l('Order').' '.$id_order.' - '.$errs."<br>";
-					}
-				}
-			}
-			if ($errors == 0)
-				Tools::redirectAdmin(self::$currentIndex.'&conf=4&token='.$this->token);
-		}
-	}
-
 	public function printShippingIcons($id_order)
 	{
 		$html = '';
-		//$order = new Order($id_order);
-		//$selected_shipping = '';
 		$shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt` WHERE id_order="'.$id_order.'"');
-		//$selected_shipping = '';
-		//$shipping_service = '';
+						SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.(int)$id_order.'"');
 		$track_and_trace_url = '';
 		$track_and_trace_code = '';
+		$label = $shippings[0]['label'];
 		if (count($shippings) > 0)
 		{
-			//$selected_shipping = $shippings[0]['shipping_type'];
-			//$shipping_service = $shippings[0]['shipping_service'];
 			$track_and_trace_url = $shippings[0]['track_and_trace_url'];
 			$track_and_trace_code = $shippings[0]['track_and_trace_code'];
 		}
-		$html = (($track_and_trace_code != '')?'
-								<a href="/index.php?fc=module&module=novijetverzendt&controller=print?id_order='.$id_order.'" target="_blank" class="">
+		$html = (($label != '')?'
+								<a href="' . __PS_BASE_URI__ . 'index.php?fc=module&module=keendelivery&controller=print&id_order='.$id_order.'" target="_blank" class="">
 										<i class="icon-print"></i>
 								</a>
-								':'').'
-								'.(($track_and_trace_code != '')?'
+								':'');
+		$html .= ' '.(($track_and_trace_code != '')?'
 								<a href="'.$track_and_trace_url.'" target="_blank" class="" style="margin-left:10px;">
 										<i class="icon-truck"></i>
 								</a>
@@ -625,14 +424,11 @@ class AdminOrdersController extends AdminOrdersControllerCore
 
 	public function printShippingLastMile($id_order)
 	{
-		$novijetverzendt = new novijetverzendt();
+		$novijetverzendt = new Keendelivery();
 		$html = '';
 		$order = new Order($id_order);
-		//$selected_shipping = '';
-		//$shippings = Db::getInstance()->executeS('
-		//				SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt` WHERE id_order="'.$id_order.'"');
 		$cart_shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt_cart` WHERE id_cart="'.$order->id_cart.'"');
+						SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.(int)$order->id_cart.'"');
 		if (count($cart_shippings) > 0)
 		{
 			$selected_shipping_text = '';
@@ -656,7 +452,8 @@ class AdminOrdersController extends AdminOrdersControllerCore
 					if ($cart_shippings[0]['parcelshop_id'] != '')
 						$selected_shipping_text = '<b>'.$novijetverzendt->l('Parcelshop - DHL').'</b><br>'.$cart_shippings[0]['parcelshop_description'];
 				}
-				else if ($cart_shippings[0]['shipping_service'] == 'FADELLO')
+                //Capitals where used in previous version, still in here to prevent issues in case of overwriting
+				else if ($cart_shippings[0]['shipping_service'] == 'FADELLO' || $cart_shippings[0]['shipping_service'] == 'Fadello')
 					$selected_shipping_text = $novijetverzendt->l('Same Day Delivery');
 				else $selected_shipping_text = $novijetverzendt->l('Next Day Premium');
 			$html = $selected_shipping_text;

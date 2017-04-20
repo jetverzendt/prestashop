@@ -36,7 +36,7 @@ class Cart extends CartCore
 		$total_shipping = 0;
 		$cart_shippings = array();
 		$cart_shippings = Db::getInstance()->executeS('
-			SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt_cart` WHERE id_cart="'.(int)$this->id.'"');
+			SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.(int)$this->id.'"');
 		$jet_carrier = Configuration::get('JETVERZENDT_CARRIER_ID');
 		$id_carrier = (int)$this->id_carrier;
 

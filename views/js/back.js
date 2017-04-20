@@ -22,9 +22,43 @@
 *  @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 */
+function set_keen_shipment_and_order_fields() {
+    set_shipment_field();
+    set_service_field();
+}
+
+function set_shipment_field(){
+    if(jQuery('#JETVERZENDT_SERVICE').prop('disabled')) {
+        jQuery('#JETVERZENDT_SERVICE').prop('disabled', false);
+    }
+
+    var jet_product = jQuery('#JETVERZENDT_SHIPPER').val();
+    jQuery(".keendelivery_fields").each(function () {
+        jQuery(this).hide();
+    });
+
+    jQuery("." + jet_product).each(function () {
+        jQuery(this).show();
+    });
+}
+
+function set_service_field(){
+    var jet_product = jQuery('#JETVERZENDT_SHIPPER').val();
+    var first_service = jQuery('#JETVERZENDT_SERVICE .'+jet_product).val();
+    document.getElementById('JETVERZENDT_SERVICE').value = first_service;
+}
+
 $( document ).ready(function() {
-	if ($(".timepicker").length > 0)
-		$(".timepicker").timepicker({
-			pickDate: false
-		});
+    if ($(".timepicker").length > 0) {
+        $(".timepicker").timepicker({pickDate: false});
+    }
+
+    if($('#JETVERZENDT_SHIPPER').val()) {
+        $('#JETVERZENDT_SERVICE').prop('disabled', false)
+
+    }else{
+        $('#JETVERZENDT_SERVICE').prop('disabled', true)
+    }
+    set_shipment_field();
 });
+

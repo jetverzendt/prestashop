@@ -25,12 +25,12 @@
 *}
 
 {extends file="helpers/list/list_header.tpl"}
-
+{nocache}
 {block name=leadin}
 {if isset($updateOrderStatus_mode) && $updateOrderStatus_mode}
 	<div class="panel">
 		<div class="panel-heading">
-			{l s='Choose an order status' mod='novijetverzendt' }
+			{l s='Choose an order status' mod='keendelivery' }
 		</div>
 		<form action="{$REQUEST_URI|escape:'htmlall':'UTF-8'}" method="post">
 			<div class="radio">
@@ -55,47 +55,54 @@
 			<div class="panel-footer">
 				<button type="submit" name="cancel" class="btn btn-default">
 					<i class="icon-remove"></i>
-					{l s='Cancel' mod='novijetverzendt' }
+					{l s='Cancel' mod='keendelivery' }
 				</button>
 				<button type="submit" class="btn btn-default" name="submitUpdateOrderStatus">
 					<i class="icon-check"></i>
-					{l s='Update Order Status' mod='novijetverzendt' }
+					{l s='Update Order Status' mod='keendelivery' }
 				</button>
 			</div>
 		</form>
 	</div>
 {/if}
 
+
 {if isset($updateShippingStatus_mode) && $updateShippingStatus_mode}
 	<div class="panel">
 		<div class="panel-heading">
-			{l s='Choose a Shipping' mod='novijetverzendt' }
+			{l s='Choose a Shipping' mod='keendelivery' }
 		</div>
 		<form action="{$REQUEST_URI|escape:'htmlall':'UTF-8'}" method="post">
-			<div class="radio">
-				{$novijetverzendt_text|escape:'UTF-8'}
-			</div>
-{foreach $POST as $key => $value}
-	{if is_array($value)}
-		{foreach $value as $val}
-			<input type="hidden" name="{$key|escape:'html':'UTF-8'}[]" value="{$val|escape:'html':'UTF-8'}" />
-		{/foreach}
-	{elseif strtolower($key) != 'id_order_state'}
-			<input type="hidden" name="{$key|escape:'html':'UTF-8'}" value="{$value|escape:'html':'UTF-8'}" />
+		{$novijetverzendt_text|escape:'UTF-8'}
 
-	{/if}
-{/foreach}
+			{foreach $POST as $key => $value}
+				{if $key == 'orderBox'}
+					{foreach $value as $val}
+						<input type="hidden" name="{$key|escape:'html':'UTF-8'}[]" value="{$val|escape:'html':'UTF-8'}" />
+					{/foreach}
+				{/if}
+			{/foreach}
+
 			<div class="panel-footer">
-				<button type="submit" name="cancel" class="btn btn-default">
+				<button type="submit" name="cancel" class="btn btn-default" formnovalidate="formnovalidate">
 					<i class="icon-remove"></i>
-					{l s='Cancel' mod='novijetverzendt' }
+					{l s='Cancel' mod='keendelivery' }
 				</button>
 				<button type="submit" class="btn btn-default" name="{if $novijetverzendt_default == 1}submitUpdateShippingStatusDefault{else}submitUpdateShippingStatus{/if}">
 					<i class="icon-check"></i>
-					{l s='Update Order Status' mod='novijetverzendt' }
+					{l s='Send with KeenDelivery' mod='keendelivery' }
 				</button>
+				{if $novijetverzendt_default == 0}
+					<div style="float: right">
+						<button type="submit" class="btn btn-default" name="submitUpdateAutoShippingStatus">
+							<i class="icon-check"></i>
+							{l s='Autosend with these settings' mod='keendelivery' }
+						</button>
+					</div>
+				{/if}
 			</div>
 		</form>
 	</div>
 {/if}
 {/block}
+{/nocache}

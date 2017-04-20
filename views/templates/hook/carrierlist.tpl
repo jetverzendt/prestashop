@@ -23,24 +23,23 @@
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
-
 {if $lm_active == 1}
 	<div class='jet_shipping_options'>
 		<span id="jet_name_lastmile">{$jet_name_lastmile|escape:'htmlall':'UTF-8'}</span>
-		<a id="clear_last_mile" class="jet_small" href="javascript:void(0)" style="">{l s='(wissen)' mod='novijetverzendt'}</a>
+		<a id="clear_last_mile" class="jet_small" href="javascript:void(0)" style="">{l s='(wissen)' mod='keendelivery'}</a>
 		{if $lm_opt_1 == 1}
 			<div class='jet_shipping_option' {if $jet_country != 'NL'}style='display:none;'{/if}>
-				<a href='' id='jet_link_deliver_dates'>{l s='Kies een bezorgmoment' mod='novijetverzendt'}</a>
+				<a href='' id='jet_link_deliver_dates'>{l s='Kies een bezorgmoment' mod='keendelivery'}</a>
 			</div>
 		{/if}
 		{if $lm_opt_2 == 1}
 			<div class='jet_shipping_option'>
-				<a href='' id='jet_link_dpd_saterday'>{l s='Zaterdaglevering' mod='novijetverzendt'}{if $lm_opt_2_price_display > 0} ( + € {$lm_opt_2_price_display|escape:'htmlall':'UTF-8'} ){/if}</a>
+				<a href='' id='jet_link_dpd_saterday'>{l s='Zaterdaglevering' mod='keendelivery'}{if $lm_opt_2_price_display > 0} ( + € {$lm_opt_2_price_display|escape:'htmlall':'UTF-8'} ){/if}</a>
 			</div>
 		{/if}
 		{if $lm_opt_3_1 == 1 || $lm_opt_3_2 == 1}
 			<div class='jet_shipping_option'>
-				<a href='' id='jet_link_parcelshops'>{l s='Kies een Parcelshop uit' mod='novijetverzendt'} 
+				<a href='' id='jet_link_parcelshops'>{l s='Kies een Parcelshop uit' mod='keendelivery'}
 				{if $lm_opt_3_1_price_display > 0 || $lm_opt_3_2_price_display > 0}
 					( + {if $lm_opt_3_1 == 1}{if $lm_opt_3_1_price_display > 0}€ {$lm_opt_3_1_price_display|escape:'htmlall':'UTF-8'}{/if}{/if}
 					{if $lm_opt_3_1 == 1 && $lm_opt_3_2 == 1 && $lm_opt_3_1_price_display > 0} / {/if}
@@ -51,12 +50,12 @@
 		{/if}
 		{if $lm_opt_4 == 1}
 			<div class='jet_shipping_option' {if $jet_country != 'NL'}style='display:none;'{/if}>
-				<a href='' id='jet_link_fadello'>{l s='Same Day Delivery' mod='novijetverzendt'}{if $lm_opt_4_price_display > 0} ( + € {$lm_opt_4_price_display|escape:'htmlall':'UTF-8'} ){/if}</a>
+				<a href='' id='jet_link_fadello'>{l s='Same Day Delivery' mod='keendelivery'}{if $lm_opt_4_price_display > 0} ( + € {$lm_opt_4_price_display|escape:'htmlall':'UTF-8'} ){/if}</a>
 			</div>
 		{/if}
 		{if $lm_opt_5 == 1}
 			<div class='jet_shipping_option' {if $jet_country != 'NL'}style='display:none;'{/if}>
-				<a href='' id='jet_link_NextDayPremium'>{l s='Next Day Premium' mod='novijetverzendt'}{if $lm_opt_5_price_display > 0} ( + € {$lm_opt_5_price_display|escape:'htmlall':'UTF-8'} ){/if}</a>
+				<a href='' id='jet_link_NextDayPremium'>{l s='Next Day Premium' mod='keendelivery'}{if $lm_opt_5_price_display > 0} ( + € {$lm_opt_5_price_display|escape:'htmlall':'UTF-8'} ){/if}</a>
 			</div>
 		{/if}
 		<a href='#lastmile_lightbox' id='lastmile_lightbox_link'></a>
@@ -79,27 +78,27 @@
 	<script>
 		function updateCart(){
 			$.ajax({
-					url : '/index.php?fc=module&module=novijetverzendt&controller=process?updateCart=yes&updateCart=yes&extra_costs_shipping='+$('#extra_costs_shipping').val()+'&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
+					url : window.location.pathname + '/index.php?fc=module&module=keendelivery&controller=process?updateCart=yes&extra_costs_shipping='+$('#extra_costs_shipping').val()+'&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
 					type : 'POST',
 					data : 'updateCart=yes&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
 					processData: false,  // tell jQuery not to process the data
 					contentType: false,  // tell jQuery not to set contentType
 					success : function(data) {
 						//loadCart();
-				
+
 					}
 				});
 		}
-		
+
 		$(document).ready(function(){
-			
+
 			{if $jet_name_lastmile != ''}
 				$('#jet_name_lastmile').show();
 				$('#clear_last_mile').show();
 			{/if}
-			
+
 			var our_carrier = '';
-			
+
 			$('input.delivery_option_radio').each(function(){
 				if(document.getElementById($(this).attr('id')).checked == true && $(this).val() == {$jet_carrier|escape:'htmlall':'UTF-8'}+',') $('.jet_shipping_options').show();
 				//else $('.jet_shipping_options').hide();
@@ -121,23 +120,27 @@
 					//else $('.jet_shipping_options').hide();
 				}, 5600);
 			});
-			
+
 			setTimeout(function(){
-				
+
 				var transp_price = $('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').text().split(' ');
 				var transp_price = parseFloat($('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').text().replace('€ ', '').replace(' (Incl. BTW) ', '').replace(',', '.'));
+
+                if(isNaN(transp_price)){
+                    transp_price = 0.00;
+                }
 				var transport_price = transp_price;
 				//$('body').append(transp_price);
-				
+
 				//$('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').addClass('delivery_option_price');
 				if(!document.getElementById('transport_price_value'))
 				$('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').after('<div id="transport_price_value" class="hidden">'+transport_price+'</div>');
 				//$('#transport_price_value').remove();
-				
+
 				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html()) + {$jet_extra_costs|escape:'htmlall':'UTF-8'}).toFixed(2)).replace('.', ',')+' (Incl. BTW) ');
 				$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$jet_extra_costs|escape:'htmlall':'UTF-8'}).toFixed(2)).replace('.', ','));
 			}, 5000);
-			
+
 			$("#lastmile_lightbox_link").fancybox({
 				'hideOnContentClick': false,
 				'openEffect': 'elastic',
@@ -146,15 +149,15 @@
 				'width': 1050,
 				'autoDimensions': false,
 				afterShow: function(){
-				
+
 				}
 			});
-			
+
 			$('#jet_link_deliver_dates').click(function(e){
 				e.preventDefault();
 				setTimeout(function(){
 					$.ajax({
-						url : '/index.php?fc=module&module=novijetverzendt&controller=process?getDeliverySchedule=yes&jet_postcode='+$('#jet_postcode').val(),
+						url : window.location.pathname + '/index.php?fc=module&module=keendelivery&controller=process?getDeliverySchedule=yes&jet_postcode='+$('#jet_postcode').val(),
 						type : 'POST',
 						data : 'getDeliverySchedule=yes&jet_postcode='+$('#jet_postcode').val(),
 						processData: false,  // tell jQuery not to process the data
@@ -166,43 +169,46 @@
 					});
 				}, 600);
 			});
-			
+
 			$('#jet_link_fadello').click(function(e){
 				e.preventDefault();
-				$('#clear_last_mile').show(); 
-				$('#lastmile_service').val('FADELLO'); 
-				$('#lastmile_parcelshop_id').val('');  
-				$('#lastmile_parcelshop_description').val('');  
-				$('#jet_name_lastmile').html('{l s='Same Day Delivery' mod='novijetverzendt'}');  
-				$('#lastmile_type').val('fadello'); 
+				$('#clear_last_mile').show();
+				$('#lastmile_service').val('Fadello');
+				$('#lastmile_parcelshop_id').val('');
+				$('#lastmile_parcelshop_description').val('');
+				$('#jet_name_lastmile').html('{l s='Same Day Delivery' mod='keendelivery'}');
+				$('#lastmile_type').val('fadello');
+				console.log($('#transport_price_value').prev().html);
+				console.log({$lm_opt_4_price|escape:'htmlall':'UTF-8'});
+				console.log((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2));
 				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2))+' (Incl. BTW) ');
 				//$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2)));
 				$('#extra_costs_shipping').val({$lm_opt_4_price|escape:'htmlall':'UTF-8'});
 				updateCart();
 				return false;
-				
+
 			});
-			
+
 			$('#jet_link_NextDayPremium').click(function(e){
 				e.preventDefault();
-				$('#clear_last_mile').show(); 
-				$('#lastmile_service').val('NextDayPremium'); 
-				$('#lastmile_parcelshop_id').val('');  
-				$('#lastmile_parcelshop_description').val('');  
-				$('#jet_name_lastmile').html('{l s='Next Day Premium' mod='novijetverzendt'}');  
-				$('#lastmile_type').val('NextDayPremium'); 
+				$('#clear_last_mile').show();
+				$('#lastmile_service').val('NextDayPremium');
+				$('#lastmile_parcelshop_id').val('');
+				$('#lastmile_parcelshop_description').val('');
+				$('#jet_name_lastmile').html('{l s='Next Day Premium' mod='keendelivery'}');
+				$('#lastmile_type').val('NextDayPremium');
 				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_5_price|escape:'htmlall':'UTF-8'}).toFixed(2))+' (Incl. BTW) ');
 				//$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_5_price|escape:'htmlall':'UTF-8'}).toFixed(2)));
 				$('#extra_costs_shipping').val({$lm_opt_5_price|escape:'htmlall':'UTF-8'});
 				updateCart();
 				return false;
-				
+
 			});
-			
+
 			$('#jet_link_dpd_saterday').click(function(e){
 				e.preventDefault();
 				$.ajax({
-					url : '/index.php?fc=module&module=novijetverzendt&controller=process?getDates=yes',
+					url : window.location.pathname + '/index.php?fc=module&module=keendelivery&controller=process?getDates=yes',
 					type : 'POST',
 					data : 'getDates=yes',
 					processData: false,  // tell jQuery not to process the data
@@ -213,7 +219,7 @@
 					}
 				});
 			});
-			
+
 			$('#clear_last_mile').on('click', function(e){
 				e.preventDefault();
 				$('#jet_name_lastmile').html('');
@@ -224,12 +230,12 @@
 				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html())).toFixed(2))+' (Incl. BTW) ');
 				$('#extra_costs_shipping').val(0);
 			});
-			
+
 			$('#jet_link_parcelshops').click(function(e){
 				e.preventDefault();
 				setTimeout(function(){
 					$.ajax({
-						url : '/index.php?fc=module&module=novijetverzendt&controller=process?getMap=yes',
+						url : window.location.pathname + '/index.php?fc=module&module=keendelivery&controller=process?getMap=yes',
 						type : 'POST',
 						data : 'getMap=yes',
 						processData: false,  // tell jQuery not to process the data
@@ -241,8 +247,7 @@
 					});
 				}, 600);
 			});
-			
+
 		});
-			
 	</script>
 {/if}

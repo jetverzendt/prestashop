@@ -24,7 +24,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-class NoviJetverzendtPrintModuleFrontController extends ModuleFrontController
+class KeendeliveryPrintModuleFrontController extends ModuleFrontController
 {
 	public $handle;
 	public $exact_api;
@@ -41,7 +41,7 @@ class NoviJetverzendtPrintModuleFrontController extends ModuleFrontController
 		if (Tools::getIsset('id_order') && Tools::getValue('id_order') > 0)
 		{
 			$shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt` WHERE id_order="'.Tools::getValue('id_order').'"');
+						SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.Tools::getValue('id_order').'"');
 			if (count($shippings) > 0)
 			{
 				$selected_shipping = $shippings[0]['shipping_type'];
@@ -56,11 +56,10 @@ class NoviJetverzendtPrintModuleFrontController extends ModuleFrontController
 					]
 				);
 				$testmode = Configuration::get('JETVERZENDT_STATUS');
-				if ($testmode == 0) $apiurl = 'http://testportal.jetverzendt.nl';
-				else $apiurl = 'https://portal.jetverzendt.nl';
+				if ($testmode == 0) $apiurl = 'http://testportal.keendelivery.com';
+				else $apiurl = 'https://portal.keendelivery.com';
 				$ch = curl_init($apiurl.'/api/v2/label?api_token='.$api_key);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-				//curl_setopt($ch, CURLOPT_USERPWD, $api_key.':'.$shared_secret);
 				curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $label_data);
 				curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -71,12 +70,12 @@ class NoviJetverzendtPrintModuleFrontController extends ModuleFrontController
 					)
 				);
 				$result = Tools::jsonDecode(curl_exec($ch));
-				chmod(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), 0777);
-				file_put_contents(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
+				chmod(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type), 0777);
+				file_put_contents(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
 				header('Content-disposition: attachment; filename=label.'.Tools::strtolower($label_type));
 				header('Content-type: application/'.Tools::strtolower($label_type));
-				readfile(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type));
-				unlink(_PS_ROOT_DIR_.'/modules/novijetverzendt/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
+				readfile(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type));
+				unlink(_PS_ROOT_DIR_.'/modules/keendelivery/labels.'.Tools::strtolower($label_type), base64_decode($result->labels));
 			}
 		}
 	}

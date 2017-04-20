@@ -207,7 +207,7 @@ abstract class PaymentModule extends PaymentModuleCore
 					/* jet changes */
 					$cart_shippings = array();
 					$cart_shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt_cart` WHERE id_cart="'.(int)$this->context->cart->id.'"');
+						SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.(int)$this->context->cart->id.'"');
 					if (count($cart_shippings) > 0)
 					{
 						$vat = $carrier->getTaxesRate(new Address((int)$this->context->cart->{Configuration::get('PS_TAX_ADDRESS_TYPE')}));
@@ -237,7 +237,7 @@ abstract class PaymentModule extends PaymentModuleCore
 					/* jet changes */
 					$cart_shippings = array();
 					$cart_shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'novijetverzendt_cart` WHERE id_cart="'.(int)$this->context->cart->id.'"');
+						SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.(int)$this->context->cart->id.'"');
 					if (count($cart_shippings) > 0)
 					{
 						$vat = $carrier->getTaxesRate(new Address((int)$this->context->cart->{Configuration::get('PS_TAX_ADDRESS_TYPE')}));

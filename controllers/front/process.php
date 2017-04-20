@@ -24,7 +24,7 @@
 *  International Registered Trademark & Property of PrestaShop SA
 */
 
-class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
+class KeenDeliveryProcessModuleFrontController extends ModuleFrontController
 {
 	public function initContent()
 	{
@@ -44,29 +44,38 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 	}
 	public function updateCart()
 	{
-		Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'novijetverzendt_cart` WHERE id_cart="'.$this->context->cookie->id_cart.'"');
+
+		Db::getInstance()->execute('DELETE FROM `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.$this->context->cookie->id_cart.'"');
 		$shipping_type = 1;
 		if (Tools::getValue('lastmile_type') == 'DHL') $shipping_type = 2;
 		if (Tools::getValue('lastmile_type') == 'fadello') $shipping_type = 3;
-		$shipping_service = Tools::getValue('lastmile_service');
-		Db::getInstance()->execute('INSERT INTO `'._DB_PREFIX_.'novijetverzendt_cart` 
+		$shipping_service = pSQL(Tools::getValue('lastmile_service'));
+		$date = date('Y-m-d', strtotime(Tools::getValue('lastmile_deliverdate')));
+		if(Tools::getValue('lastmile_type') == 'fadello'){
+            $date = date('Y-m-d', strtotime('today UTC'));
+        }elseif(Tools::getValue('lastmile_type') == 'NextDayPremium'){
+		    if(strtotime('tomorrow') != strtotime('next sunday')) {
+                $date = date('Y-m-d', strtotime('tomorrow'));
+            }else{
+                $date = date('Y-m-d', strtotime('next monday'));
+            }
+        }
+		$test = Db::getInstance()->execute('INSERT INTO '._DB_PREFIX_.'keendelivery_cart 
 									(extra_shipping, id_cart, shipping_type, shipping_service, parcelshop_id, deliverdate, deliverperiod, 
 									deliverevening, last_mile_choice, parcelshop_description
 									) 
 									VALUES 
 									(
-									"'.Tools::getValue('extra_costs_shipping').'", 
+									"'.pSQL(Tools::getValue('extra_costs_shipping')).'", 
 									"'.$this->context->cookie->id_cart.'", 
 									"'.$shipping_type.'", 
 									"'.$shipping_service.'", 
-									"'.Tools::getValue('lastmile_parcelshop_id').'",
-									"'.date('Y-m-d', strtotime(Tools::getValue('lastmile_deliverdate'))).'",
-									"'.Tools::getValue('lastmile_deliverperiod').'",
-									"'.Tools::getValue('lastmile_deliverevening').'",
-									"'.Tools::getValue('jet_last_mile_choice').'",
-									"'.addslashes(Tools::getValue('lastmile_parcelshop_description')).'"
-									
-									
+									"'.pSQL(Tools::getValue('lastmile_parcelshop_id')?pSQL(Tools::getValue('lastmile_parcelshop_id')): "").'",
+									"'.$date.'",
+									"'.pSQL(Tools::getValue('lastmile_deliverperiod')).'",
+									"'.(Tools::getValue('lastmile_deliverevening')?(int)Tools::getValue('lastmile_deliverevening'):"").'",
+									"'.(Tools::getValue('jet_last_mile_choice')?(int)Tools::getValue('jet_last_mile_choice'):"").'",
+									"'.addslashes(pSQL(Tools::getValue('lastmile_parcelshop_description'))).'"
 									)');
 	}
 	public function getDeliverySchedule()
@@ -84,8 +93,8 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		);
 
 		$testmode = Configuration::get('JETVERZENDT_STATUS');
-		if ($testmode == 0) $apiurl = 'http://testportal.jetverzendt.nl';
-		else $apiurl = 'https://portal.jetverzendt.nl';
+		if ($testmode == 0) $apiurl = 'http://testportal.keendelivery.com';
+		else $apiurl = 'https://portal.keendelivery.com';
 		$ch = curl_init($apiurl.'/api/v2/delivery-schedule/search?api_token='.$api_key);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//curl_setopt($ch, CURLOPT_USERPWD, $api_key.':'.$shared_secret);
@@ -101,7 +110,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		$result = Tools::jsonDecode(curl_exec($ch));
 
 		//print_r($result);
-		$novijetverzendt = new Novijetverzendt();
+		$novijetverzendt = new Keendelivery();
 		$info = '
 			<h3>'.$novijetverzendt->l('Kies een tijdstip uit:').'</h3>
 			<table width="92%" class="deliver_dates">
@@ -198,8 +207,8 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		);
 
 		$testmode = Configuration::get('JETVERZENDT_STATUS');
-		if ($testmode == 0) $apiurl = 'http://testportal.jetverzendt.nl';
-		else $apiurl = 'https://portal.jetverzendt.nl';
+		if ($testmode == 0) $apiurl = 'http://testportal.keendelivery.com';
+		else $apiurl = 'https://portal.keendelivery.com';
 		$ch = curl_init($apiurl.'/api/v2/parcel-shop/search?api_token='.$api_key);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		//curl_setopt($ch, CURLOPT_USERPWD, $api_key.':'.$shared_secret);
@@ -213,7 +222,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		);
 
 		$result = Tools::jsonDecode(curl_exec($ch));
-		$novijetverzendt = new Novijetverzendt();
+		$novijetverzendt = new Keendelivery();
 		$addresses = array();
 		$i = 0;
 		if (isset($result->parcel_shops))
@@ -224,7 +233,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 					$addresses[$i]['lng'] = $item->longitude;
 					$addresses[$i]['html'] = '
 						<div style="overflow: auto;" class="jet_map_pin">
-							<h3>'.$item->name.''.(($lm_opt_3_1_price > 0)?' ( + €&nbsp;'.number_format($lm_opt_3_1_price, 2, ',', '').')':'').
+							<h3>'.$item->name.''.(($lm_opt_3_2_price > 0)?' ( + €&nbsp;'.number_format($lm_opt_3_2_price, 2, ',', '').')':'').
 							'</h3>'.$item->street.' '.$item->house_number.'<br>
 							'.$item->zip_code.' '.$item->city.'<br><br>
 							<i>'.$novijetverzendt->l('Openingstijden').'</i>
@@ -254,19 +263,20 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 								</tr></tbody>
 							</table><br>
 							<button onclick="$(\'#clear_last_mile\').show(); 
-							$(\'#lastmile_parcelshop_id\').val(\'\'); 
-							$(\'#lastmile_service\').val(\'DPD\'); $(\'#lastmile_parcelshop_id\').val(\''.$item->id.'\');  
+							//$(\'#lastmile_parcelshop_id\').val(\'\'); 
+							$(\'#lastmile_parcelshop_id\').val(\''.$item->id.'\'); 
+							$(\'#lastmile_service\').val(\'DPD\');  
 							$(\'#lastmile_parcelshop_description\').val(\''.addslashes($item->name.' '.$item->street.' '.$item->house_number.' - '.$item->city).'\');  
 							$(\'#jet_name_lastmile\').html(\''.addslashes($item->name.' '.$item->street.' '.$item->house_number.' - '.$item->city).'\'); 
-							$(\'#transport_price_value\').prev().html(((parseFloat($(\'#transport_price_value\').html())+'.$lm_opt_3_1_price.
+							$(\'#transport_price_value\').prev().html(((parseFloat($(\'#transport_price_value\').html())+'.$lm_opt_3_2_price.
 							').toFixed(2))+\' € (incl. btw)\');
-							$(\'#extra_costs_shipping\').val('.$lm_opt_3_1_price.');
+							$(\'#extra_costs_shipping\').val('.$lm_opt_3_2_price.');
 							$(\'#lastmile_type\').val(\'parcelshop\');  
 							updateCart();
 							$(\'.fancybox-close\').trigger(\'click\'); return false; " 
 							class="button">'.$novijetverzendt->l('Parcelshop uitkiezen').'</button></div>
 					';
-					$addresses[$i]['marker'] = '/modules/novijetverzendt/views/img/marker_dpd.png';
+					$addresses[$i]['marker'] = __PS_BASE_URI__ . '/modules/keendelivery/views/img/marker_dpd.png';
 					$i++;
 				}
 			if (isset($result->parcel_shops->DHL) && is_array($result->parcel_shops->DHL))
@@ -276,7 +286,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 					$addresses[$i]['lng'] = $item->longitude;
 					$addresses[$i]['html'] = '
 						<div style="overflow: auto;" class="jet_map_pin">
-							<h3>'.$item->name.''.(($lm_opt_3_1_price > 0)?' ( + €&nbsp;'.number_format($lm_opt_3_2_price, 2, ',', '').')':'').'</h3>'.
+							<h3>'.$item->name.''.(($lm_opt_3_1_price > 0)?' ( + €&nbsp;'.number_format($lm_opt_3_1_price, 2, ',', '').')':'').'</h3>'.
 							$item->street.' '.$item->house_number.'<br>
 							'.$item->zip_code.' '.$item->city.'<br><br>
 							<i>'.$novijetverzendt->l('Openingstijden').'</i>
@@ -309,15 +319,15 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 							$(\'#lastmile_parcelshop_id\').val(\''.$item->id.'\');  
 							$(\'#lastmile_parcelshop_description\').val(\''.addslashes($item->name.' '.$item->street.' '.$item->house_number.' - '.$item->city).'\');  
 							$(\'#jet_name_lastmile\').html(\''.addslashes($item->name.' '.$item->street.' '.$item->house_number.' - '.$item->city).'\');  
-							$(\'#transport_price_value\').prev().html(((parseFloat($(\'#transport_price_value\').html())+'.$lm_opt_3_2_price.
+							$(\'#transport_price_value\').prev().html(((parseFloat($(\'#transport_price_value\').html())+'.$lm_opt_3_1_price.
 							').toFixed(2))+\' € (incl. btw)\');
-							$(\'#extra_costs_shipping\').val('.$lm_opt_3_2_price.');
+							$(\'#extra_costs_shipping\').val('.$lm_opt_3_1_price.');
 							$(\'#lastmile_type\').val(\'parcelshop\');  
 							updateCart();
 							$(\'.fancybox-close\').trigger(\'click\'); return false; " 
 							class="button">'.$novijetverzendt->l('Parcelshop uitkiezen').'</button></div>
 					';
-					$addresses[$i]['marker'] = '/modules/novijetverzendt/views/img/marker_dhl.png';
+					$addresses[$i]['marker'] = __PS_BASE_URI__ . '/modules/keendelivery/views/img/marker_dhl.png';
 					$i++;
 				}
 		echo Tools::jsonEncode($addresses);
@@ -329,7 +339,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		$lm_opt_1_price = Configuration::get('JETVERZENDT_LM_OPT_1_PRICE');
 		$lm_opt_2_time = Configuration::get('JETVERZENDT_LM_OPT_2_TIME');
 		$lm_opt_2_price = Configuration::get('JETVERZENDT_LM_OPT_2_PRICE');
-		$novijetverzendt = new Novijetverzendt();
+		$novijetverzendt = new Keendelivery();
 		$sunday_dates = '<h3>'.$novijetverzendt->l('Kies een zaterdag uit:').'</h3>';
 		$sunday = strtotime('next Saturday');
 		$friday = strtotime('next Friday');
@@ -371,7 +381,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		//$lm_opt_3_2 = Configuration::get('JETVERZENDT_LM_OPT_3_2');
 		//$lm_opt_3_1_price = Configuration::get('JETVERZENDT_LM_OPT_3_1_PRICE');
 		//$lm_opt_3_2_price = Configuration::get('JETVERZENDT_LM_OPT_3_2_PRICE');
-		$novijetverzendt = new Novijetverzendt();
+		$novijetverzendt = new Keendelivery();
 		$map = '
 		<h3>'.$novijetverzendt->l('Kies een Parcelshop').':</h3>
 
@@ -454,7 +464,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 
 				function getParcelShopsData(zip_code, number, country) {
 					$.ajax({
-						url : "/index.php?fc=module&module=novijetverzendt&controller=process?getPlaces=yes&zip_code="+zip_code+"&number="+number+"&country="+country,
+						url : window.location.pathname  + "/index.php?fc=module&module=keendelivery&controller=process?getPlaces=yes&zip_code="+zip_code+"&number="+number+"&country="+country,
 						type : "POST",
 						data : "getPlaces=yes&zip_code="+zip_code+"&number="+number+"&country="+country,
 						processData: false,  // tell jQuery not to process the data
@@ -595,4 +605,7 @@ class NoviJetverzendtProcessModuleFrontController extends ModuleFrontController
 		';
 		echo $map;
 	}
+
+
+
 }
