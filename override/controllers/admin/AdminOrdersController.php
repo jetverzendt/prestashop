@@ -403,9 +403,10 @@ class AdminOrdersController extends AdminOrdersControllerCore
 						SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.(int)$id_order.'"');
 		$track_and_trace_url = '';
 		$track_and_trace_code = '';
-		$label = $shippings[0]['label'];
+		$label = '';
 		if (count($shippings) > 0)
 		{
+            $label = $shippings[0]['label'];
 			$track_and_trace_url = $shippings[0]['track_and_trace_url'];
 			$track_and_trace_code = $shippings[0]['track_and_trace_code'];
 		}
