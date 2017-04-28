@@ -333,7 +333,6 @@ class Keendelivery extends Module
 					if (count($shippings) > 0)
 						Db::getInstance()->execute('
 								UPDATE `'._DB_PREFIX_.'keendelivery` SET 
-								parcelshop_id="0", 
 								shipping_type="1",                                                      
 								date="'.date('Y-m-d H:i:s').'",
 								shipment_id="'.$shipment_id.'",	
@@ -342,12 +341,7 @@ class Keendelivery extends Module
 								track_and_trace_url="'.$track_and_trace_url.'", 
 								shipping_service="'. $info['service'] . '",
 								option_1_quantity="'. $info['amount'] . '", 
-								option_1_reference="'. $info['reference'] . '",
-								option_1_mail="'. $info['predict'] . '", 
-								option_1_saturday_delivery="'. $info['saturday_delivery'] . '",
-								option_1_pickup_delivery="0",                          
-								option_1_pickup_date="'. $info['pickup_date'] . '",
-								option_1_amount="'. (empty($info['cod']) ? $info['cod']: '') .'"                                     
+								option_1_reference="'. $info['reference'] . '"                           
 								WHERE id_order="'.$id_order.'"');
 					else
 						Db::getInstance()->execute('
@@ -385,20 +379,8 @@ class Keendelivery extends Module
 								track_and_trace_url="'.$track_and_trace_url.'", 
 								shipping_service="'. $info['service'] . '", 
 								option_2_quantity="'. $info['amount'] . '", 
-								option_2_reference="'. $info['reference'] . '", 
-								option_3_weight="'. $info['weight'] . '",
-								option_1_weight="'. $info['weight'] . '",
-								option_2_weight="'. $info['weight'] . '", 
-								option_2_pickup_delivery="0", 
-								option_2_pickup_date="'. $info['pickup_date'] . '", 
-								option_3_pickup_date="'. $info['pickup_date'] . '", 
-								option_2_insured_value="'. (empty($info['insurance']) ? $info['insurance']: '') .'", 
-								option_2_saturday_delivery="'. (empty($info['saturday']) ? $info['saturday']: '') .'", 
-								option_2_amount="'. (empty($info['cod']) ? $info['cod']: '') .'", 
-								option_2_signature="'. (empty($info['signature_required']) ? $info['signature_required']: '') .'", 
-								option_2_no_neighbors="'. (empty($info['not_by_neighbours']) ? $info['not_by_neighbours']: '') .'", 
-								option_2_evening="'. (empty($info['evening_delivery']) ? $info['evening_delivery']: '') .'", 
-								option_2_extra_cover="'. (empty($info['extra_insurance']) ? $info['extra_insurance']: '') .'"
+								option_2_reference="'. $info['reference'] . '",
+								option_1_weight="'. $info['weight'] . '"
 								WHERE id_order="'.$id_order.'"');
 					else
 						Db::getInstance()->execute('
@@ -1476,7 +1458,7 @@ class Keendelivery extends Module
 //        if (isset($_SESSION['shipping_methods']) && is_array($_SESSION['shipping_methods'])) {
 //            $shipping_methods = $_SESSION['shipping_methods'];
         $config_shipping_methods = Configuration::get('KEENDELIVERY_SHIPPINGMETHODS');
-        if(!empty($config_shipping_methods && $update == false)){
+        if(!empty($config_shipping_methods) && $update == false){
             $shipping_methods = json_decode(Configuration::get('KEENDELIVERY_SHIPPINGMETHODS'));
         } else {
             if($status == 0){
