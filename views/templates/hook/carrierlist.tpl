@@ -23,6 +23,7 @@
 *  @license    http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
 *  International Registered Trademark & Property of PrestaShop SA
 *}
+{nocache}
 {if $lm_active == 1}
 	<div class='jet_shipping_options'>
 		<span id="jet_name_lastmile">{$jet_name_lastmile|escape:'htmlall':'UTF-8'}</span>
@@ -78,17 +79,16 @@
 	<script>
 		function updateCart(){
 			$.ajax({
-					url : window.location.pathname + '/index.php?fc=module&module=keendelivery&controller=process?updateCart=yes&extra_costs_shipping='+$('#extra_costs_shipping').val()+'&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
-					type : 'POST',
-					data : 'updateCart=yes&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
-					processData: false,  // tell jQuery not to process the data
-					contentType: false,  // tell jQuery not to set contentType
-					success : function(data) {
-						//loadCart();
-
-					}
-				});
+				url : window.location.pathname + '/index.php?fc=module&module=keendelivery&controller=process?updateCart=yes&extra_costs_shipping='+$('#extra_costs_shipping').val()+'&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
+				type : 'POST',
+				data : 'updateCart=yes&lastmile_type='+$('#lastmile_type').val()+'&lastmile_service='+$('#lastmile_service').val()+'&lastmile_deliverdate='+$('#lastmile_deliverdate').val()+'&lastmile_parcelshop_id='+$('#lastmile_parcelshop_id').val()+'&lastmile_parcelshop_description='+$('#lastmile_parcelshop_description').val()+'&lastmile_deliverperiod='+$('#lastmile_deliverperiod').val()+'&lastmile_deliverevening='+$('#lastmile_deliverevening').val(),
+				processData: false,  // tell jQuery not to process the data
+				contentType: false,  // tell jQuery not to set contentType
+				success : function(data) {
+				}
+			});
 		}
+
 
 		$(document).ready(function(){
 
@@ -98,48 +98,28 @@
 			{/if}
 
 			var our_carrier = '';
-
+			//show lastmile options when keenDelivery carrier is autoselected after loading the page
 			$('input.delivery_option_radio').each(function(){
 				if(document.getElementById($(this).attr('id')).checked == true && $(this).val() == {$jet_carrier|escape:'htmlall':'UTF-8'}+',') $('.jet_shipping_options').show();
-				//else $('.jet_shipping_options').hide();
 				if($(this).val() == {$jet_carrier|escape:'htmlall':'UTF-8'}+',') our_carrier = $(this).attr('id');
 			});
-			setTimeout(function(){
-				$('input.delivery_option_radio').each(function(){
-					if(document.getElementById($(this).attr('id')).checked == true && $(this).val() == {$jet_carrier}+','){
-						$('.jet_shipping_options').show();
-					}
-					//else $('.jet_shipping_options').hide();
-					if($(this).val() == {$jet_carrier|escape:'htmlall':'UTF-8'}+',') our_carrier = $(this).attr('id');
-				});
-			}, 4000);
+
+			//show lastmile options when KeenDelivery carrier is selected
 			$('input.delivery_option_radio').on('click', function(){
 				var ref = $(this);
-				setTimeout(function(){
-					if(document.getElementById($(ref).attr('id')).checked == true && $(ref).val() == {$jet_carrier|escape:'htmlall':'UTF-8'}+',') $('.jet_shipping_options').show();
-					//else $('.jet_shipping_options').hide();
-				}, 5600);
+                if(document.getElementById($(ref).attr('id')).checked == true && $(ref).val() == {$jet_carrier|escape:'htmlall':'UTF-8'}+',') $('.jet_shipping_options').show();
+
 			});
 
-			setTimeout(function(){
-
-				var transp_price = $('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').text().split(' ');
-				var transp_price = parseFloat($('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').text().replace('€ ', '').replace(' (Incl. BTW) ', '').replace(',', '.'));
-
-                if(isNaN(transp_price)){
-                    transp_price = 0.00;
-                }
-				var transport_price = transp_price;
-				//$('body').append(transp_price);
-
-				//$('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').addClass('delivery_option_price');
-				if(!document.getElementById('transport_price_value'))
-				$('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').after('<div id="transport_price_value" class="hidden">'+transport_price+'</div>');
-				//$('#transport_price_value').remove();
-
-				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html()) + {$jet_extra_costs|escape:'htmlall':'UTF-8'}).toFixed(2)).replace('.', ',')+' (Incl. BTW) ');
-				$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$jet_extra_costs|escape:'htmlall':'UTF-8'}).toFixed(2)).replace('.', ','));
-			}, 5000);
+			//Set KeenDelivery carrier price in a seperate element
+            var transp_price = $('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').text().split(' ');
+            var transp_price = parseFloat($('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').text().replace('€ ', '').replace(' (Incl. BTW) ', '').replace(',', '.'));
+            if(isNaN(transp_price)){
+                transp_price = 0.00;
+            }
+            var transport_price = transp_price;
+            if(!document.getElementById('transport_price_value'))
+            $('#'+our_carrier).closest('td').parent().find('div.delivery_option_price').after('<div id="transport_price_value" class="hidden">'+transport_price+'</div>');
 
 			$("#lastmile_lightbox_link").fancybox({
 				'hideOnContentClick': false,
@@ -178,11 +158,8 @@
 				$('#lastmile_parcelshop_description').val('');
 				$('#jet_name_lastmile').html('{l s='Same Day Delivery' mod='keendelivery'}');
 				$('#lastmile_type').val('fadello');
-				console.log($('#transport_price_value').prev().html);
-				console.log({$lm_opt_4_price|escape:'htmlall':'UTF-8'});
-				console.log((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2));
 				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2))+' (Incl. BTW) ');
-				//$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2)));
+				$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_4_price|escape:'htmlall':'UTF-8'}).toFixed(2)));
 				$('#extra_costs_shipping').val({$lm_opt_4_price|escape:'htmlall':'UTF-8'});
 				updateCart();
 				return false;
@@ -198,7 +175,7 @@
 				$('#jet_name_lastmile').html('{l s='Next Day Premium' mod='keendelivery'}');
 				$('#lastmile_type').val('NextDayPremium');
 				$('#transport_price_value').prev().html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_5_price|escape:'htmlall':'UTF-8'}).toFixed(2))+' (Incl. BTW) ');
-				//$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_5_price|escape:'htmlall':'UTF-8'}).toFixed(2)));
+				$('#total_shipping').html('€ '+((parseFloat($('#transport_price_value').html()) + {$lm_opt_5_price|escape:'htmlall':'UTF-8'}).toFixed(2)));
 				$('#extra_costs_shipping').val({$lm_opt_5_price|escape:'htmlall':'UTF-8'});
 				updateCart();
 				return false;
@@ -251,3 +228,4 @@
 		});
 	</script>
 {/if}
+{/nocache}

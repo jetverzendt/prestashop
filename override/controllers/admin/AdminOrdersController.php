@@ -361,11 +361,20 @@ class AdminOrdersController extends AdminOrdersControllerCore
 					$id_array[] = $id;
 				}
 			}
+			$keen = new KeenDelivery();
+            $shippingMethods = json_decode($keen->get_shipping_methods());
+            if(!empty($shippingMethods)){
+                $label_sizes = array();
+                foreach($shippingMethods as $method){
+                    $label_sizes[$method->value] = ['size' => Configuration::get('JETVERZENDT_PRINT_SIZE')];
+                }
+            }
 			// Create label collection
 			$label_data = Tools::jsonEncode(
 				[
 					'shipments' => $id_array,
-					'type' => $label_type
+					'type' => $label_type,
+                    'options' => $label_sizes
 				]
 			);
 

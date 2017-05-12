@@ -44,9 +44,9 @@ class KeendeliveryPrintModuleFrontController extends ModuleFrontController
 						SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.Tools::getValue('id_order').'"');
 			if (count($shippings) > 0)
 			{
-				$selected_shipping = $shippings[0]['shipping_type'];
+				$selected_shipping = $shippings[0]['carrier'];
 				$id = $shippings[0]['shipment_id'];
-				if ($selected_shipping == 1) $label_type = 'PDF';
+				if ($selected_shipping != 'DHL') $label_type = 'PDF';
 				$label_data = Tools::jsonEncode(
 					[
 						'shipments' => [
@@ -55,6 +55,7 @@ class KeendeliveryPrintModuleFrontController extends ModuleFrontController
 						'type' => $label_type
 					]
 				);
+
 				$testmode = Configuration::get('JETVERZENDT_STATUS');
 				if ($testmode == 0) $apiurl = 'http://testportal.keendelivery.com';
 				else $apiurl = 'https://portal.keendelivery.com';

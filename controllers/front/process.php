@@ -29,7 +29,7 @@ class KeenDeliveryProcessModuleFrontController extends ModuleFrontController
 	public function initContent()
 	{
 		setlocale(LC_ALL, 'nl_NL');
-		parent::initContent();
+//		parent::initContent();
 		if (Tools::getValue('getDates') == 'yes')
 			$this->getDates();
 		if (Tools::getValue('getMap') == 'yes')
@@ -60,23 +60,23 @@ class KeenDeliveryProcessModuleFrontController extends ModuleFrontController
                 $date = date('Y-m-d', strtotime('next monday'));
             }
         }
-		$test = Db::getInstance()->execute('INSERT INTO '._DB_PREFIX_.'keendelivery_cart 
-									(extra_shipping, id_cart, shipping_type, shipping_service, parcelshop_id, deliverdate, deliverperiod, 
-									deliverevening, last_mile_choice, parcelshop_description
-									) 
-									VALUES 
-									(
-									"'.pSQL(Tools::getValue('extra_costs_shipping')).'", 
-									"'.$this->context->cookie->id_cart.'", 
-									"'.$shipping_type.'", 
-									"'.$shipping_service.'", 
-									"'.pSQL(Tools::getValue('lastmile_parcelshop_id')?pSQL(Tools::getValue('lastmile_parcelshop_id')): "").'",
-									"'.$date.'",
-									"'.pSQL(Tools::getValue('lastmile_deliverperiod')).'",
-									"'.(Tools::getValue('lastmile_deliverevening')?(int)Tools::getValue('lastmile_deliverevening'):"").'",
-									"'.(Tools::getValue('jet_last_mile_choice')?(int)Tools::getValue('jet_last_mile_choice'):"").'",
-									"'.addslashes(pSQL(Tools::getValue('lastmile_parcelshop_description'))).'"
-									)');
+		Db::getInstance()->execute('INSERT INTO '._DB_PREFIX_.'keendelivery_cart 
+        (extra_shipping, id_cart, shipping_type, shipping_service, parcelshop_id, deliverdate, deliverperiod, 
+        deliverevening, last_mile_choice, parcelshop_description
+        ) 
+        VALUES 
+        (
+        "'.pSQL(Tools::getValue('extra_costs_shipping')).'", 
+        "'.$this->context->cookie->id_cart.'", 
+        "'.$shipping_type.'", 
+        "'.$shipping_service.'", 
+        "'.pSQL(Tools::getValue('lastmile_parcelshop_id')?pSQL(Tools::getValue('lastmile_parcelshop_id')): "").'",
+        "'.$date.'",
+        "'.pSQL(Tools::getValue('lastmile_deliverperiod')).'",
+        "'.(Tools::getValue('lastmile_deliverevening')?(int)Tools::getValue('lastmile_deliverevening'):"").'",
+        "'.(Tools::getValue('jet_last_mile_choice')?(int)Tools::getValue('jet_last_mile_choice'):"").'",
+        "'.addslashes(pSQL(Tools::getValue('lastmile_parcelshop_description'))).'"
+        )');
 	}
 	public function getDeliverySchedule()
 	{

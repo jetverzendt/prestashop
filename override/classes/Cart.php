@@ -34,7 +34,6 @@ class Cart extends CartCore
 			$delivery_option = $this->getDeliveryOption($default_country, false, false);
 
 		$total_shipping = 0;
-		$cart_shippings = array();
 		$cart_shippings = Db::getInstance()->executeS('
 			SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.(int)$this->id.'"');
 		$jet_carrier = Configuration::get('JETVERZENDT_CARRIER_ID');

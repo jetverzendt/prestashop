@@ -5,7 +5,7 @@
     <file url="file://$PROJECT_DIR$/controllers/front/process.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/keendelivery.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/override/classes/Cart.php" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/override/classes/PaymentModule.php" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/override/classes/PaymentModule_tmp.php" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/override/controllers/admin/AdminOrdersController.php" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>

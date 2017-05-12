@@ -37,7 +37,7 @@ class Keendelivery extends Module
 	{
 		$this->name = 'keendelivery';
 		$this->tab = 'shipping_logistics';
-		$this->version = '1.2.0';
+		$this->version = '1.2.5';
 		$this->author = 'NoviSites.nl';
 		$this->need_instance = 0;
 
@@ -79,6 +79,7 @@ class Keendelivery extends Module
         Configuration::updateValue('KEENDELIVERY_PACKAGETYPE_DPD', 2);
         Configuration::updateValue('KEENDELIVERY_AUTOPROCESSENABLE', false);
         Configuration::updateValue('KEENDELIVERY_SHIPPINGMETHODS', 0);
+        Configuration::updateValue('KEEN_TIME', strtotime("last Day"));
 
 		Configuration::updateValue('JETVERZENDT_LM_ACTIVE', false);
 		Configuration::updateValue('JETVERZENDT_LM_OPT_1', false);
@@ -283,7 +284,7 @@ class Keendelivery extends Module
                 $label['size'] = $label_size;
             $info['label'] = $label;
             if(empty($info['reference'])){
-                $info['reference'] = 'Order: ' . $id_order;
+                $info['reference'] = $order->reference;
             }
             $errors = '';
 		}
@@ -328,78 +329,44 @@ class Keendelivery extends Module
 			$shippings = Db::getInstance()->executeS('SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.$id_order.'"');
 			if ($shipment_id != '')//has succesfully send a shipment set informatie i.e. track&trace into the database
 			{
-				if ($info['product'] == 'DPD')
-				{
-					if (count($shippings) > 0)
-						Db::getInstance()->execute('
-								UPDATE `'._DB_PREFIX_.'keendelivery` SET 
-								shipping_type="1",                                                      
-								date="'.date('Y-m-d H:i:s').'",
-								shipment_id="'.$shipment_id.'",	
-								label="'.$label.'",	
-								track_and_trace_code="'.$track_and_trace_code.'",
-								track_and_trace_url="'.$track_and_trace_url.'", 
-								shipping_service="'. $info['service'] . '",
-								option_1_quantity="'. $info['amount'] . '", 
-								option_1_reference="'. $info['reference'] . '"                           
-								WHERE id_order="'.$id_order.'"');
-					else
-						Db::getInstance()->execute('
-								INSERT INTO `'._DB_PREFIX_.'keendelivery` 
-								(shipping_type, id_order, date, shipment_id, label, track_and_trace_code, track_and_trace_url, shipping_service, option_1_quantity,
-								option_1_reference, option_1_mail, option_1_saturday_delivery, option_1_pickup_delivery, option_1_pickup_date,option_1_amount ) 
-								VALUES 
-								("1", 
-								"'.$id_order.'", 
-								"'.date('Y-m-d H:i:s').'", 
-								"'.$shipment_id.'",
-								"'.$label.'", 
-								"'.$track_and_trace_code.'", 
-								"'.$track_and_trace_url.'", 
-								"", "", "", "", "", "", "", ""
-								)');
-				}
-				else
-				{
-                    $product_id = 5;
-				    if($info['product'] == 'Fadello' || $info['product'] == 'NextDayPremium') {
-                        $product_id = 4;
-                    }
-				    if($info['product'] == 'DHL') {
-                        $product_id = 2;
-                    }
-					if (count($shippings) > 0)
-						Db::getInstance()->execute('
-								UPDATE `'._DB_PREFIX_.'keendelivery` SET 
-								shipping_type="'.$product_id.'", 
-								date="'.date('Y-m-d H:i:s').'",
-								shipment_id="'. $shipment_id .'",	
-								label="'.$label.'",	
-								track_and_trace_code="'.$track_and_trace_code.'",
-								track_and_trace_url="'.$track_and_trace_url.'", 
-								shipping_service="'. $info['service'] . '", 
-								option_2_quantity="'. $info['amount'] . '", 
-								option_2_reference="'. $info['reference'] . '",
-								option_1_weight="'. $info['weight'] . '"
-								WHERE id_order="'.$id_order.'"');
-					else
-						Db::getInstance()->execute('
-								INSERT INTO `'._DB_PREFIX_.'keendelivery` 
-								(shipping_type, id_order, date, shipment_id, label, track_and_trace_code, track_and_trace_url, shipping_service,
-								option_2_quantity, option_2_reference, option_2_weight, option_2_pickup_delivery, option_2_pickup_date,
-								option_2_insured_value, option_2_saturday_delivery, option_2_amount, option_2_signature, option_2_no_neighbors,
-								option_2_evening, option_2_extra_cover, option_3_weight, option_1_weight) 
-								VALUES 
-								("'.$product_id.'", 
-								"'.$id_order.'", 
-								"'.date('Y-m-d H:i:s').'", 
-								"'.$shipment_id.'",
-								"'.$label.'", 
-								"'.$track_and_trace_code.'", 
-								"'.$track_and_trace_url.'", 
-								"", "", "", "", "", "", "", "", "", "", "", "", "", "", ""
-								)');
-				}
+                if (count($shippings) > 0)
+                    Db::getInstance()->execute('
+                            UPDATE `'._DB_PREFIX_.'keendelivery` SET 
+                            carrier="'.$info['product'].'", 
+                            date="'.date('Y-m-d H:i:s').'",
+                            shipment_id="'. $shipment_id .'",	
+                            shipping_service="'. $info['service'] . '", 
+                            amount="'. $info['amount'] . '", 
+                            reference="'. $info['reference'] . '",
+                            weight="'. (!empty($info['weight'])? $info['weight']: '') . '",
+                            pickup_date="'. (!empty($info['pickup_date'])? $info['pickup_date'] : '') . '",
+                            label="'.$label.'",	
+                            track_and_trace_code="'.$track_and_trace_code.'",
+                            track_and_trace_url="'.$track_and_trace_url.'", 
+                            parcel_shop="'.(!empty($info['parcel_shop_id'])? $info['parcel_shop_id'] : '') .'"
+                            WHERE id_order="'.$id_order.'"');
+                else
+                    Db::getInstance()->execute('
+                            INSERT INTO `'._DB_PREFIX_.'keendelivery` 
+                            (id_order, date, shipment_id, carrier, shipping_service,
+                            amount, reference, weight, pickup_date,
+                            label, track_and_trace_code, track_and_trace_url, parcel_shop) 
+                            VALUES 
+                            ("'.$id_order.'", 
+                            "'.date('Y-m-d H:i:s').'", 
+                            "'.$shipment_id.'",
+                            "'.$info['product'] .'",
+                            "'.$info['service'].'",
+                            "'.$info['amount'].'",
+                            "'.$info['reference'].'",
+                            "'.(!empty($info["weight"])? $info["weight"] : '').'",
+                            "'.(!empty($info["pickup_date"])? $info['pickup_date'] : '') .'",
+                            "'.$label.'", 
+                            "'.$track_and_trace_code.'", 
+                            "'.$track_and_trace_url.'", 
+                            "'.(!empty($info['parcel_shop_id'])? $info['parcel_shop_id'] : '').'"
+                            )');
+
 
 				// update state of order
 				$order_state = new OrderState($order_state);
@@ -537,9 +504,10 @@ class Keendelivery extends Module
 		foreach ($order_states as $item)
 			array_push($order_state, array('JETVERZENDT_ORDER_STATE' => $item['id_order_state'], 'name' => $item['name']));
 		$print_size = array();
-		array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => 'default', 'name' => $this->l('Standard')));
-		array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => 'A4', 'name' => $this->l('Combine 3 labels to A4')));
-		array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => 'A6', 'name' => $this->l('Combine 4 labels to A4')));
+		array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => 'DEFAULT', 'name' => $this->l('Standard')));
+		array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => '4XA6', 'name' => $this->l('Combine 4 labels to A4')));
+        array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => 'A5', 'name' => $this->l('A5 label (SameDay/nextDay only)')));
+        array_push($print_size, array('JETVERZENDT_PRINT_SIZE' => '2XA5', 'name' => $this->l('Combine 2 labels to A4 (SameDay/nextDay only)')));
 
 		$dhl_send = array();
 		array_push($dhl_send, array('JETVERZENDT_DHL_SEND' => '0', 'name' => $this->l('No')));
@@ -1233,7 +1201,7 @@ class Keendelivery extends Module
                                     result = \'<div class="form-group">\';
                                     result += \'<label class="control-label col-lg-3">Referentie</label>\';
                                     result += \'<div class="col-lg-9">\';
-                                    result += \'<input type="text" name="reference" id="keen_reference" placeholder="Order: order_nr"/>\';
+                                    result += \'<input type="text" name="reference" id="keen_reference" placeholder="Reference_nr"/>\';
                                     result += \'</div></div>\';
                             
                                     return result;
@@ -1451,14 +1419,12 @@ class Keendelivery extends Module
 
     public function get_shipping_methods($update = false)
     {
-        $shipping_methods = '';
+        $keen_time = Configuration::get('KEEN_TIME');
         $api_key = Configuration::get('JETVERZENDT_CLIENT_ID');
         $status = Configuration::get('JETVERZENDT_STATUS');
-        //session_start();
-//        if (isset($_SESSION['shipping_methods']) && is_array($_SESSION['shipping_methods'])) {
-//            $shipping_methods = $_SESSION['shipping_methods'];
         $config_shipping_methods = Configuration::get('KEENDELIVERY_SHIPPINGMETHODS');
-        if(!empty($config_shipping_methods) && $update == false){
+        if(((!empty($config_shipping_methods) || $config_shipping_methods != false) && $update == false)
+            && (date('Y-m-d',$keen_time) === date('Y-m-d',strtotime("now")) && $update == false)){
             $shipping_methods = json_decode(Configuration::get('KEENDELIVERY_SHIPPINGMETHODS'));
         } else {
             if($status == 0){
@@ -1482,6 +1448,7 @@ class Keendelivery extends Module
             $shipping_methods             = (isset($shipping_methods->shipping_methods)) ? (array)$shipping_methods->shipping_methods : false;
             //$_SESSION['shipping_methods'] = $shipping_methods;
             Configuration::updateValue('KEENDELIVERY_SHIPPINGMETHODS', json_encode($shipping_methods));
+            Configuration::updateValue('KEEN_TIME', strtotime("now"));
         }
         return json_encode($shipping_methods);
     }
@@ -1709,7 +1676,7 @@ class Keendelivery extends Module
                                 result = \'<div class="form-group">\';
                                 result += \'<label class="control-label col-lg-3">Referentie</label>\';
                                 result += \'<div class="col-lg-9">\';
-                                result += \'<input type="text" name="shipment[\' + current_order_id + \'][reference]" id="keen_reference" placeholder="Order: \' + current_order_id + \'"/>\';
+                                result += \'<input type="text" name="shipment[\' + current_order_id + \'][reference]" id="keen_reference" placeholder="Reference_nr"/>\';
                                 result += \'</div></div>\';
                         
                                 return result;
@@ -2066,7 +2033,24 @@ class Keendelivery extends Module
     }
 
     public function hookactionValidateOrder($params){
-	    $order = $params['order'];
+        $order = $params['order'];
+        $cart = $params['cart'];
+
+        $cart_shippings = array();
+        $cart_shippings = Db::getInstance()->executeS('
+						SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.(int)$cart->id.'"');
+        if (count($cart_shippings) > 0)
+        {
+            $carrier = new Carrier((int)$order->id_carrier, $order->id_lang);
+            $vat = $carrier->getTaxesRate(new Address((int)$cart->{Configuration::get('PS_TAX_ADDRESS_TYPE')}));
+            $order->total_shipping += $cart_shippings[0]['extra_shipping'];
+            $order->total_shipping_tax_incl += $cart_shippings[0]['extra_shipping'];
+            $order->total_shipping_tax_excl += number_format((100 * $cart_shippings[0]['extra_shipping'] / (100 + $vat)), 6, '.', '');
+            $order->total_paid += $cart_shippings[0]['extra_shipping'];
+            $order->total_paid_tax_incl += $cart_shippings[0]['extra_shipping'];
+            $order->total_paid_tax_excl += number_format((100 * $cart_shippings[0]['extra_shipping'] / (100 + $vat)), 6, '.', '');
+        }
+
         if(Configuration::get('KEENDELIVERY_AUTOPROCESSENABLE') == 1 && json_encode($order->id_carrier) == Configuration::get('JETVERZENDT_CARRIER_ID')) {
             $cart_shippings = Db::getInstance()->executeS('SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.$order->id_cart.'"');
             if (count($cart_shippings) > 0) {
@@ -2106,579 +2090,8 @@ class Keendelivery extends Module
         }
     }
 
-    //No used detected
-    public function getShipmentInfo($id_order = 0)
-    {
-        $selected_shipping_text = '';
-        if ($id_order > 0)
-        {
-            $order = new Order($id_order);
-            $selected_shipping = '';
-            $cart_shippings = Db::getInstance()->executeS('
-							SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.$order->id_cart.'"');
-            if (count($cart_shippings) > 0)
-            {
-                if ($cart_shippings[0]['shipping_service'] == 'DPD')
-                {
-                    $selected_shipping_text = '<b>'.$this->l('DPD Zaterdaglevering').'</b><br>';
-                    if ($cart_shippings[0]['deliverdate'] != '' && $cart_shippings[0]['deliverdate'] != '0000-00-00')
-                        $selected_shipping_text = '<b>'.$this->l('DPD Zaterdaglevering').'</b><br>'.$this->l('Zaterdag').' '.
-                            date('d-m-Y', strtotime($cart_shippings[0]['deliverdate'].' + 1 days'));
-                    if ($cart_shippings[0]['parcelshop_id'] != '')
-                        $selected_shipping_text = '<b>'.$this->l('Parcelshop - DPD').'</b><br>'.$cart_shippings[0]['parcelshop_description'];
-                }
-                else
-                    if ($cart_shippings[0]['shipping_service'] == 'DHL')
-                    {
-                        $selected_shipping_text = $this->l('Bezorgmoment - DHL');
-                        if ($cart_shippings[0]['deliverperiod'] != '' && $cart_shippings[0]['deliverdate'] != '' && $cart_shippings[0]['deliverdate'] != '0000-00-00')
-                            $selected_shipping_text = '<b>'.$this->l('Bezorgmoment - DHL').'</b>
-							<br>'.$this->l('Bezorgdatum').': '.date('d-m-Y', strtotime($cart_shippings[0]['deliverdate'])).
-                                '<br>'.$this->l('Tijdvak').': '.$cart_shippings[0]['deliverperiod'];
-                        if ($cart_shippings[0]['parcelshop_id'] != '')
-                            $selected_shipping_text = '<b>'.$this->l('Parcelshop - DHL').'</b><br>'.$cart_shippings[0]['parcelshop_description'];
-                    }
-                    //Capitals where used in previous version, still in here to prevent issues in case of overwriting
-                    else if ($cart_shippings[0]['shipping_service'] == 'FADELLO' || $cart_shippings[0]['shipping_service'] == 'Fadello')
-                        $selected_shipping_text = $this->l('Same Day Delivery');
-                    else $selected_shipping_text = $this->l('Next Day Premium');
-            }
-        }
+    public function temp_upgrade(){
 
-        $shipper = Configuration::get('JETVERZENDT_SHIPPER');
-        $service_dpd = Configuration::get('JETVERZENDT_SERVICE_DPD');
-        $service_dhl = Configuration::get('JETVERZENDT_SERVICE_DHL');
-        $dpd_send = Configuration::get('JETVERZENDT_DPD_SEND');
-
-        $order = new Order($id_order);
-        $selected_shipping = '';
-        $shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'keendelivery` WHERE id_order="'.$id_order.'"');
-        $cart_shippings = Db::getInstance()->executeS('
-						SELECT * FROM  `'._DB_PREFIX_.'keendelivery_cart` WHERE id_cart="'.$order->id_cart.'"');
-        $selected_shipping = '';
-        $shipping_service = '';
-        $track_and_trace_url = '';
-        $track_and_trace_code = '';
-        // DPD
-        $option_1_quantity = '';
-        $option_1_reference = '';
-        $option_1_mail = '';
-        $option_1_pickup_date = '';
-        $option_1_pickup_delivery = '';
-        $option_1_amount = '';
-        $option_1_saturday_delivery = '';
-        $option_1_weight = '';
-
-        // DHL
-        $option_2_quantity = '';
-        $option_2_reference = '';
-        $option_2_weight = '';
-        $option_2_pickup_delivery = '';
-        $option_2_pickup_date = '';
-        $option_2_insured_value = '';
-        $option_2_signature = '';
-        $option_2_no_neighbors = '';
-        $option_2_evening = '';
-        $option_2_extra_cover = '';
-        $option_2_saturday_delivery = '';
-        $option_2_amount = '';
-        $parcelshop_id = '';
-        $option_3_weight = '';
-
-        if (count($shippings) > 0)
-        {
-            $selected_shipping = $shippings[0]['shipping_type'];
-            $shipping_service = $shippings[0]['shipping_service'];
-            $track_and_trace_url = $shippings[0]['track_and_trace_url'];
-            $track_and_trace_code = $shippings[0]['track_and_trace_code'];
-            // DPD
-            $option_1_quantity = $shippings[0]['option_1_quantity'];
-            $option_1_weight = $shippings[0]['option_1_weight'];
-            $option_1_reference = $shippings[0]['option_1_reference'];
-            $option_1_mail = $shippings[0]['option_1_mail'];
-            $option_1_pickup_date = $shippings[0]['option_1_pickup_date'];
-            if ($option_1_pickup_date != '0000-00-00' && $option_1_pickup_date != '1970-01-01')
-                $option_1_pickup_date = date('d-m-Y', strtotime($option_1_pickup_date));
-            else $option_1_pickup_date = '';
-            $option_1_pickup_delivery = $shippings[0]['option_1_pickup_delivery'];
-            $option_1_amount = $shippings[0]['option_1_amount'];
-            $option_1_saturday_delivery = $shippings[0]['option_1_saturday_delivery'];
-
-            $option_3_pickup_date = $shippings[0]['option_3_pickup_date'];
-            if ($option_3_pickup_date != '0000-00-00') $option_3_pickup_date = date('d-m-Y', strtotime($option_3_pickup_date));
-            else
-                $option_3_pickup_date = '';
-
-            // DHL
-            $option_2_quantity = $shippings[0]['option_2_quantity'];
-            $option_2_reference = $shippings[0]['option_2_reference'];
-            $option_2_weight = $shippings[0]['option_2_weight'];
-            $option_2_pickup_delivery = $shippings[0]['option_2_pickup_delivery'];
-            $option_2_pickup_date = $shippings[0]['option_2_pickup_date'];
-            if ($option_2_pickup_date != '0000-00-00') $option_2_pickup_date = date('d-m-Y', strtotime($option_2_pickup_date));
-            else $option_2_pickup_date = '';
-            $option_2_insured_value = $shippings[0]['option_2_insured_value'];
-            $option_2_signature = $shippings[0]['option_2_signature'];
-            $option_2_no_neighbors = $shippings[0]['option_2_no_neighbors'];
-            $option_2_evening = $shippings[0]['option_2_evening'];
-            $option_2_extra_cover = $shippings[0]['option_2_extra_cover'];
-            $option_2_saturday_delivery = $shippings[0]['option_2_saturday_delivery'];
-            $option_2_amount = $shippings[0]['option_2_amount'];
-
-            $parcelshop_id = $shippings[0]['parcelshop_id'];
-            $option_3_weight = $shippings[0]['option_3_weight'];
-        }
-        else
-        {
-            if (count($cart_shippings) > 0)
-            {
-                if ($cart_shippings[0]['shipping_service'] == 'DPD') $selected_shipping = 1;
-                else if ($cart_shippings[0]['shipping_service'] == 'DHL') $selected_shipping = 2;
-                //Capitals where used in previous version, still in here to prevent issues in case of overwriting
-                else if ($cart_shippings[0]['shipping_service'] == 'FADELLO') $selected_shipping = 3;
-                else if ($cart_shippings[0]['shipping_service'] == 'Fadello') $selected_shipping = 3;
-                else $selected_shipping = 4;
-                //$selected_shipping = (($cart_shippings[0]['shipping_service'] == 'DPD')?1:($cart_shippings[0]['shipping_service'] == 'DHL')?2:3);
-                if ($selected_shipping == 2 && $cart_shippings[0]['deliverperiod'] != '')
-                {
-                    /*
-                    if ($cart_shippings[0]['deliverperiod'] == '09:00-13:00' || $cart_shippings[0]['deliverperiod'] == '11:00-15:00')
-                        $shipping_service = 'E10';
-                    if ($cart_shippings[0]['deliverperiod'] == '14:00-18:00')
-                        $shipping_service = 'E12';
-                    if ($cart_shippings[0]['deliverperiod'] == '18:00-21:00')
-                        $shipping_service = 'E18';
-                    */
-                    $shipping_service = 'DHL_FOR_YOU';
-                }
-                if ($selected_shipping == 1 && $cart_shippings[0]['deliverdate'] != '0000-00-00')
-                    $shipping_service = 'CL';
-                //$shipping_service = $shippings[0]['shipping_service'];
-                // DPD
-                $option_1_pickup_date = $cart_shippings[0]['deliverdate'];
-                if ($option_1_pickup_date != '0000-00-00' && $option_1_pickup_date != '1970-01-01')
-                    $option_1_pickup_date = date('d-m-Y', strtotime($option_1_pickup_date));
-                else $option_1_pickup_date = '';
-                if ($selected_shipping == 1 && $cart_shippings[0]['deliverdate'] != '0000-00-00')
-                    $option_1_saturday_delivery = 1;
-                $parcelshop_id = $cart_shippings[0]['parcelshop_id'];
-                if ($parcelshop_id != '')
-                {
-                    if ($selected_shipping == 1) $shipping_service = 'PARCEL_SHOP';
-                    else if ($selected_shipping == 2) $shipping_service = 'PARCELSHOP';
-                }
-                //echo $selected_shipping."_".$shipping_service;
-                //print_r($cart_shippings);
-                //echo $cart_shippings[0]['shipping_service']."_".$selected_shipping."_".$shipping_service."_";
-                // DHL
-
-                if ($cart_shippings[0]['deliverdate'] != '0000-00-00' && $cart_shippings[0]['deliverdate'] != '1970-01-01')
-                {
-                    $option_3_pickup_date = date('d-m-Y', strtotime($cart_shippings[0]['deliverdate']));
-                    $option_2_pickup_date = date('d-m-Y', strtotime($cart_shippings[0]['deliverdate']));
-                    $option_1_pickup_date = date('d-m-Y', strtotime($cart_shippings[0]['deliverdate']));
-                }
-                else
-                {
-                    $option_2_pickup_delivery = 1;
-                    $option_1_pickup_delivery = 1;
-                }
-
-            }
-        }
-        if ($option_3_weight <= 0) $option_3_weight = $this->getOrderWeight($id_order);
-        if ($option_2_weight <= 0) $option_2_weight = $this->getOrderWeight($id_order);
-        if ($option_1_weight <= 0) $option_1_weight = $this->getOrderWeight($id_order);
-
-        $option_1_weight = ceil($option_1_weight);
-        $option_2_weight = ceil($option_2_weight);
-        $option_3_weight = ceil($option_3_weight);
-
-        $this->html = '
-			<br>
-			'.(($id_order != 0)?'<form method="post" action="'.$this->context->link->getAdminLink('AdminModules', true).'&conf=1&configure='.$this->name.
-                '&tab_module='.$this->tab.'&module_name='.$this->name.'&saveShippment=1">':'').'
-				<fieldset>
-					<div class="row">
-						<div class="col-md-12">
-							
-							<div class="panel form-horizontal">
-								'.(($id_order != 0)?'<input type="hidden" name="id_order" value="'.$id_order.'">':'').'
-								<div class="panel-heading"><i class="icon-truck "></i> Shipment</div>
-								'.((Tools::getValue('errors') != '')?
-                '<div class="alert alert-warning">
-									<button data-dismiss="alert" class="close" type="button">×</button>
-									<h4>'.Tools::getValue('errors').'</h4>
-								</div>'
-                :'').'
-								'.$selected_shipping_text.'
-							
-								<div id="shipment_form"></div>
-								
-								<script>
-								$( document ).ready(function() {
-								    var shipping_methods = jQuery.parseJSON(\'<?php echo get_json_shipping_methods() ?>\');
-								    
-                                    function generate_shipment_form() {
-                                        var form = \'\';
-                                
-                                        form += generate_product_dropdown();
-                                
-                                        form += generate_amount_field();
-                                
-                                        form += generate_reference_field();
-                                
-                                        form += generate_service_field();
-                                
-                                        form += generate_service_options();
-                                
-                                        $(\'#shipment_form\').html(form);
-                                
-                                        set_keen_services();
-                                
-                                    }
-                                    
-                                    function generate_product_dropdown() {
-                                        result = \'<div class="form-group">\';
-                                
-                                        result += \'<div class="label">Vervoerder</div>\';
-                                
-                                        result += \'<select id="keen_product" name="product" onchange="set_keen_services()">\';
-                                
-                                        if (Object.keys(shipping_methods).length > 0) {
-                                            for (var k in shipping_methods) {
-                                                if (typeof shipping_methods[k] !== \'function\') {
-                                                    result += \'<option value="\' + shipping_methods[k][\'value\'] + \'">\' + shipping_methods[k][\'text\'] + \'</option>\';
-                                                }
-                                            }
-                                        }
-                                
-                                        result += \'</select>\';
-                                        result += \'</div>\';
-                                
-                                        return result;
-                                
-                                    }
-                                
-                                    function generate_amount_field() {
-                                        result = \'<div class="form-group">\';
-                                        result += \'<div class="label">Aantal pakketten</div>\';
-                                        result += \'<input type="text" name="amount" id="keen_amount" />\';
-                                        result += \'</div>\';
-                                
-                                        return result;
-                                    }
-								
-                                    function generate_reference_field() {
-                                        result = \'<div class="form-group">\';
-                                        result += \'<div class="label">Referentie</div>\';
-                                        result += \'<input type="text" name="reference" id="keen_reference" />\';
-                                        result += \'</div>\';
-                                
-                                        return result;
-                                    }
-                                
-                                    function generate_service_field() {
-                                        result = \'<div class="form-group">\';
-                                        result += \'<div class="label">Service</div>\';
-                                        result += \'<select id="keen_service" name="service" onchange="set_keen_service_options()">\';
-                                        result += \'</select>\';
-                                        result += \'</div>\';
-                                
-                                        return result;
-                                    }
-								
-								    function generate_service_options() {
-                                        result = \'<div id="keen_service_options"></div>\';
-                                        return result;
-                                    }
-                                
-                                    function set_keen_services() {
-                                        var current_product = $(\'#keen_product\').val();
-                                        result = \'\';
-                                
-                                        if (Object.keys(shipping_methods).length > 0) {
-                                            for (var k in shipping_methods) {
-                                                if (typeof shipping_methods[k] !== \'function\') {
-                                                    if (k == current_product) {
-                                
-                                                        if (Object.keys(shipping_methods[k][\'services\']).length > 0) {
-                                                            for (var i in shipping_methods[k][\'services\']) {
-                                                                if (typeof shipping_methods[k][\'services\'][i] !== \'function\') {
-                                                                    result += \'<option value="\' + shipping_methods[k][\'services\'][i][\'value\'] + \'">\' + shipping_methods[k][\'services\'][i][\'text\'] + \'</option>\';
-                                                                }
-                                                            }
-                                
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        $(\'#keen_service\').html(\'\');
-                                        $(\'#keen_service\').html(result);
-                                
-                                
-                                        set_keen_service_options();
-                                
-                                    }
-								    
-                                    function set_keen_service_options() {
-                                        var current_product = $(\'#keen_product\').val();
-                                        var keen_service = $(\'#keen_service\').val();
-                                        result = \'\';
-                                
-                                        if (Object.keys(shipping_methods).length > 0) {
-                                            for (var k in shipping_methods) {
-                                                if (typeof shipping_methods[k] !== \'function\') {
-                                                    if (k == current_product) {
-                                
-                                                        if (Object.keys(shipping_methods[k][\'services\']).length > 0) {
-                                                            for (var i in shipping_methods[k][\'services\']) {
-                                                                if (i == keen_service) {
-                                
-                                                                    if (Object.keys(shipping_methods[k][\'services\'][i][\'options\']).length > 0) {
-                                                                        for (var j in shipping_methods[k][\'services\'][i][\'options\']) {
-                                
-                                                                            if (typeof shipping_methods[k][\'services\'][i][\'options\'] !== \'function\' && shipping_methods[k][\'services\'][i][\'options\'][j][\'type\'] != \'hidden\') {
-                                                                                result += \'<div class="form-group">\';
-                                                                                result += \'<div class="label">\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'text\'] + \'</div>\';
-                                
-                                                                                type = shipping_methods[k][\'services\'][i][\'options\'][j][\'type\'];
-                                
-                                                                                if (type == \'selectbox\') {
-                                                                                    result += \'<select \';
-                                                                                    if (shipping_methods[k][\'services\'][i][\'options\'][j][\'mandatory\'] == 1) {
-                                                                                        result += \' required \';
-                                                                                    }
-                                                                                    result += \' name="\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'field\'] + \'" id="keen_service_option_\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'field\'] + \'">\';
-                                
-                                                                                    if (shipping_methods[k][\'services\'][i][\'options\'][j][\'mandatory\'] == 0) {
-                                                                                        result += \'<option value="">Kies evt. een optie</option>\';
-                                                                                    }
-                                
-                                                                                    if (Object.keys(shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\']).length > 0) {
-                                                                                        for (var l in shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\']) {
-                                                                                            if (typeof shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'] !== \'function\') {
-                                                                                                result += \'<option value="\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'][l][\'value\'] + \'">\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'][l][\'text\'] + \'</option>\';
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                                                                    result += \'</select>\';
-                                                                                }
-                                
-                                
-                                                                                if (type == \'radio\') {
-                                
-                                                                                    if (Object.keys(shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\']).length > 0) {
-                                                                                        for (var l in shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\']) {
-                                                                                            if (typeof shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'] !== \'function\') {
-                                                                                                result += \'<input type="radio" \';
-                                                                                                result += \' name="\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'field\'] + \'" \';
-                                                                                                if (shipping_methods[k][\'services\'][i][\'options\'][j][\'mandatory\'] == 1) {
-                                                                                                    result += \' required \';
-                                                                                                }
-                                                                                                result += \' value="\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'][l][\'value\'] + \'">\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'][l][\'text\'] + \'</input>\';
-                                                                                            }
-                                                                                        }
-                                                                                    }
-                                
-                                                                                }
-                                
-                                
-                                                                                if (type == \'checkbox\') {
-                                
-                                                                                    result += \'<input type="checkbox" \';
-                                                                                    if (shipping_methods[k][\'services\'][i][\'options\'][j][\'mandatory\'] == 1) {
-                                                                                        result += \' required \';
-                                                                                    }
-                                
-                                                                                    result += \' name="\' + (shipping_methods[k][\'services\'][i][\'options\'][j][\'field\']) + \'" id="keen_service_option_\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'field\'] + \'" />\';
-                                
-                                                                                }
-                                
-                                
-                                                                                if (type == \'textbox\' || type == \'date\' || type == \'email\') {
-                                
-                                                                                    result += \'<input type="text" \';
-                                
-                                                                                    if (type == \'textbox\') {
-                                                                                        result += \' type="text" \';
-                                                                                    } else if (type == \'email\') {
-                                                                                        result += \' type="email" \';
-                                                                                    } else if (type == \'date\') {
-                                                                                        result += \' type="text" pattern="(0[1-9]|1[0-9]|2[0-9]|3[01])-(0[1-9]|1[012])-[0-9]{4}" \';
-                                                                                    }
-                                
-                                
-                                                                                    if (shipping_methods[k][\'services\'][i][\'options\'][j][\'mandatory\'] == 1) {
-                                                                                        result += \' required \';
-                                                                                    }
-                                
-                                                                                    result += \' name="\' + (shipping_methods[k][\'services\'][i][\'options\'][j][\'field\']) + \'" id="keen_service_option_\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'field\'] + \'" />\';
-                                
-                                                                                }
-                                
-                                                                                result += \'</div>\';
-                                                                            }
-                                                                            if(typeof shipping_methods[k][\'services\'][i][\'options\'] !== \'function\' && shipping_methods[k][\'services\'][i][\'options\'][j][\'type\'] == \'hidden\'){
-                                                                                result += \'<div class="form-group">\';
-                                                                                result += \'<input type="hidden"\';
-                                                                                result += \' value="\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'choices\'][\'value\'] +\'"\';
-                                                                                result += \' name="\' + (shipping_methods[k][\'services\'][i][\'options\'][j][\'field\']) + \'" id="keen_service_option_\' + shipping_methods[k][\'services\'][i][\'options\'][j][\'field\'] + \'" />\';
-                                                                                result += \'</div>\';
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                
-                                        $(\'#keen_service_options\').html(\'\');
-                                        $(\'#keen_service_options\').html(result);
-                                    }
-								
-								    generate_shipment_form();
-								
-									$(".shipping_option").change(function(){
-										$(".shipping_option_type").hide();
-										$("#shipping_option_type_"+$(this).val()).show();
-										if ($(this).val() == 4)
-											$("#shipping_option_type_3").show();
-									});
-									$(".shipping_option_type_1").change(function(){
-										if ($(this).val() == "CLR") $(".option_1_amount").show();
-										else $(".option_1_amount").hide();
-									});
-									$(".shipping_option_type_2").change(function(){
-										if ($(this).val() == "COD") $(".option_2_amount").show();
-										else $(".option_2_amount").hide();
-										if ($(this).val() == "EUROPLUS") $("#option_2_saturday_delivery").css("display", "block");
-										else $("#option_2_saturday_delivery").hide();
-										if ($(this).val() == "DHL_FOR_YOU") $("#option_2_signature").css("display", "block");
-										else $("#option_2_signature").hide();
-										if ($(this).val() == "DHL_FOR_YOU") $("#option_2_no_neighbors").css("display", "block");
-										else $("#option_2_no_neighbors").hide();
-										if ($(this).val() == "DHL_FOR_YOU") $("#option_2_evening").css("display", "block");
-										else $("#option_2_evening").hide();
-										if ($(this).val() == "DHL_FOR_YOU") $("#option_2_extra_cover").css("display", "block");
-										else $("#option_2_extra_cover").hide();
-										if ($(this).val() == "EUROPLUS" || $(this).val() == "EXPRESSER" || $(this).val() == "EUROPLUS_INTERNATIONAL") 
-											$(".option_2_insured_value").show();
-										else $(".option_2_insured_value").hide();
-										
-										
-									});
-									$("#option_1_pickup_delivery").change(function(){
-										if (document.getElementById("option_1_pickup_delivery").checked == true)
-											$("#option_1_pickup_date").hide();
-										else $("#option_1_pickup_date").show();
-									});
-									$("#option_2_pickup_delivery").change(function(){
-										if (document.getElementById("option_2_pickup_delivery").checked == true)
-											$("#option_2_pickup_date").hide();
-										else $("#option_2_pickup_date").show();
-									});
-									$(".datepicker_special").datepicker({
-										minDate: 1,
-										beforeShowDay: $.datepicker.noWeekends
-									});
-									$("#option_3_weight").keyup(function(){
-										$(".weight_error").remove();
-										if ($(this).val() > 30){
-											$(this).val(30);
-											$(this).after("<span class=\"weight_error\">'.$this->l('Max weight is 30KG').'</span>");
-										}
-									});
-									$("#option_1_weight").keyup(function(){
-										$(".weight_error").remove();
-										if ($(".shipping_option").val() == 1){
-											// DPD
-											if ($(".shipping_option_type_1").val() == "PARCEL_SHOP"){
-												if ($(this).val() > 15){
-													$(this).val(15);
-													$(this).after("<span class=\"weight_error\">'.$this->l('Max weight is 15KG').'</span>");
-												}
-											}
-											if (document.getElementById("option_1_saturday_delivery").checked == true){
-												if ($(this).val() > 31){
-													$(this).val(31);
-													$(this).after("<span class=\"weight_error\">'.$this->l('Max weight is 31KG').'</span>");
-												}
-											}
-										}
-									});
-									$("#option_2_weight").keyup(function(){
-										$(".weight_error").remove();
-										if ($(".shipping_option").val() == 2){
-											// DPD
-											if ($(".shipping_option_type_2").val() == "PARCELSHOP"){
-												if ($(this).val() > 15){
-													$(this).val(15);
-													$(this).after("<span class=\"weight_error\">'.$this->l('Max weight is 15KG').'</span>");
-												}
-											}
-											if ($(".shipping_option_type_2").val() == "DHL_FOR_YOU"){
-												if ($(this).val() > 20){
-													$(this).val(20);
-													$(this).after("<span class=\"weight_error\">'.$this->l('Max weight is 20KG').'</span>");
-												}
-											}
-										}
-									});
-									$(".shipping_option").change(function(){
-										$("#option_1_weight").trigger("keyup");
-										$("#option_2_weight").trigger("keyup");
-										$("#option_3_weight").trigger("keyup");
-									});
-									$(".shipping_option_type_2").change(function(){
-										$("#option_1_weight").trigger("keyup");
-										$("#option_2_weight").trigger("keyup");
-										$("#option_3_weight").trigger("keyup");
-									});
-									$(".shipping_option_type_1").change(function(){
-										$("#option_1_weight").trigger("keyup");
-										$("#option_2_weight").trigger("keyup");
-										$("#option_3_weight").trigger("keyup");
-									});
-									$("#option_1_saturday_delivery").click(function(){
-										$("#option_1_weight").trigger("keyup");
-										$("#option_2_weight").trigger("keyup");
-										$("#option_3_weight").trigger("keyup");
-									});
-								});
-								</script>
-								<br>
-								<button name="submitShippmentLabel" class="btn btn-primary pull-left hidden" id="submitShippmentLabel" type="submit">
-										'.$this->l('Get label').'
-								</button>
-								'.(($track_and_trace_code != '')?'
-								<a href="/index.php?fc=module&module=keendelivery&controller=print?id_order='.$id_order.
-                '" target="_blank" class="btn btn-primary pull-left" id="submitShippmentLabel" type="submit">
-										'.$this->l('Get label').'
-								</a>
-								':'').'
-								'.(($track_and_trace_code != '')?'
-								<a href="'.$track_and_trace_url.
-                '" target="_blank" class="btn btn-primary pull-left" id="submitShippmentLabel" type="submit" style="margin-left:10px;">
-										'.$track_and_trace_code.'
-								</a>
-								':'').'
-								'.(($id_order != 0)?'<button name="submitShippment" class="btn btn-primary pull-right" id="submitShippment" type="submit">
-										'.$this->l('Add shippment').'
-								</button>':'').'
-								<div class="clearfix"></div>
-							</div>
-						</div>  
-					</div>
-				</fieldset>
-			'.(($id_order != 0)?'</form>':'').'
-			';
-        return $this->html;
     }
 
 }

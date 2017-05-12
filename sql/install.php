@@ -26,38 +26,54 @@
 
 $sql = array();
 
+//$sql[] = '
+//	ALTER TABLE `'._DB_PREFIX_.'keendelivery`
+//  DROP COLUMN IF EXISTS `option_1_quantity`,
+//  DROP COLUMN IF EXISTS `option_1_mail`,
+//  DROP COLUMN IF EXISTS `option_1_saturday_delivery`,
+//  DROP COLUMN IF EXISTS `option_1_pickup_delivery`,
+//  DROP COLUMN IF EXISTS `id_cart`,
+//  DROP COLUMN IF EXISTS `option_2_quantity`,
+//  DROP COLUMN IF EXISTS `option_2_reference`,
+//  DROP COLUMN IF EXISTS `option_2_weight`,
+//  DROP COLUMN IF EXISTS `option_2_signature`,
+//  DROP COLUMN IF EXISTS `option_2_no_neighbors`,
+//  DROP COLUMN IF EXISTS `option_2_evening`,
+//  DROP COLUMN IF EXISTS `option_2_extra_cover`,
+//  DROP COLUMN IF EXISTS `option_2_insured_value`,
+//  DROP COLUMN IF EXISTS `option_2_pickup_delivery`,
+//  DROP COLUMN IF EXISTS `option_2_pickup_date`,
+//  DROP COLUMN IF EXISTS `option_2_saturday_delivery`,
+//  DROP COLUMN IF EXISTS `option_2_amount`,
+//  DROP COLUMN IF EXISTS `option_3_weight`,
+//  DROP COLUMN IF EXISTS `option_3_pickup_date`;
+//';
+//
+//$sql[] = '
+//	ALTER TABLE `'._DB_PREFIX_.'keendelivery`
+//  CHANGE IF EXISTS `shipping_type` `carrier` text null,
+//  CHANGE IF EXISTS `option_1_reference` `reference` varchar(255) NULL,
+//  CHANGE IF EXISTS `option_1_pickup_date` `pickup_date` date NULL,
+//  CHANGE IF EXISTS `option_1_amount` `amount` int(11) NULL,
+//  CHANGE IF EXISTS `option_1_weight` `weight` float NULL;
+//';
+$sql[] = '
+	  DROP TABLE IF EXISTS `'._DB_PREFIX_.'keendelivery`;
+    ';
+
 $sql[] = '
 	CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'keendelivery` (
   `id_novijetverzendt` int(11) NULL,
   `id_order` int(11) NULL,
-  `id_cart` int(11) NULL,
-  `parcel_shop` int(11) NULL,
-  `shipping_type` int(11) NULL,
+  `carrier` int(11) NULL,
   `date` datetime NULL,
   `shipment_id` text NULL,
   `shipping_service` text NULL,
-  `option_1_quantity` int(11) NULL,
-  `option_1_reference` varchar(255) NULL,
-  `option_1_mail` int(11) NULL,
-  `option_1_saturday_delivery` int(11) NULL,
-  `option_1_pickup_delivery` int(11) NULL,
-  `option_1_pickup_date` date NULL,
-  `option_1_amount` float NULL,
-  `option_1_weight` int(11) NULL,
-  `option_2_quantity` int(11) NULL,
-  `option_2_reference` varchar(255) NULL,
-  `option_2_weight` int(11) NULL,
-  `option_2_signature` int(11) NULL,
-  `option_2_no_neighbors` int(11) NULL,
-  `option_2_evening` int(11) NULL,
-  `option_2_extra_cover` int(11) NULL,
-  `option_2_insured_value` double NULL,
-  `option_2_pickup_delivery` int(11) NULL,
-  `option_2_pickup_date` date NULL,
-  `option_2_saturday_delivery` int(11) NULL,
-  `option_2_amount` double NULL,
-  `option_3_weight` int(11) NULL,
-  `option_3_pickup_date` date NULL,
+  `weight` float NULL,
+  `reference` varchar(255) NULL,
+  `pickup_date` date NULL,
+  `amount` int(11) NULL,
+  `parcel_shop` int(11) NULL,
   `label` text NULL,
   `track_and_trace_code` text NULL,
   `track_and_trace_url` text NULL
@@ -66,8 +82,9 @@ $sql[] = '
 ALTER TABLE `'._DB_PREFIX_.'keendelivery`
   ADD PRIMARY KEY (`id_novijetverzendt`);
 
-ALTER TABLE `'._DB_PREFIX_.'keendelivery` CHANGE `id_novijetverzendt` `id_novijetverzendt` INT(11) NOT NULL AUTO_INCREMENT;
-';
+ALTER TABLE `'._DB_PREFIX_.'keendelivery` CHANGE `id_novijetverzendt` `id_novijetverzendt` INT(11) NOT NULL AUTO_INCREMENT;';
+
+
 $sql[] = '
 	CREATE TABLE IF NOT EXISTS `'._DB_PREFIX_.'keendelivery_cart` (
   `id_novijetverzendt_cart` int(11) NULL,
@@ -87,6 +104,8 @@ ALTER TABLE `'._DB_PREFIX_.'keendelivery_cart`
 ADD PRIMARY KEY (`id_novijetverzendt_cart`);
 ALTER TABLE `'._DB_PREFIX_.'keendelivery_cart` CHANGE `id_novijetverzendt_cart` `id_novijetverzendt_cart` INT(11) NOT NULL AUTO_INCREMENT;
 ';
+
+
 
 foreach ($sql as $query)
 	if (Db::getInstance()->execute($query) == false)
