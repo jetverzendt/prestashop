@@ -2,7 +2,7 @@
 <module>
 	<name>keendelivery</name>
 	<displayName><![CDATA[Novi keendelivery]]></displayName>
-	<version><![CDATA[1.2.5]]></version>
+	<version><![CDATA[1.2.6]]></version>
 	<description><![CDATA[Novi keendelivery connector]]></description>
 	<author><![CDATA[NoviSites.nl]]></author>
 	<tab><![CDATA[shipping_logistics]]></tab>

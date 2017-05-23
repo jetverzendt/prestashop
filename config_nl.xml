@@ -2,7 +2,7 @@
 <module>
 	<name>keendelivery</name>
 	<displayName><![CDATA[Keendelivery. - Simpelweg de beste deal]]></displayName>
-	<version><![CDATA[1.2.5]]></version>
+	<version><![CDATA[1.2.6]]></version>
 	<description><![CDATA[De connector van KeenDelivery om uw zending met gemak aan te melden en te beheren]]></description>
 	<author><![CDATA[NoviSites.nl]]></author>
 	<tab><![CDATA[shipping_logistics]]></tab>

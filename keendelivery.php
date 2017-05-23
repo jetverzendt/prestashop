@@ -37,7 +37,7 @@ class Keendelivery extends Module
 	{
 		$this->name = 'keendelivery';
 		$this->tab = 'shipping_logistics';
-		$this->version = '1.2.5';
+		$this->version = '1.2.6';
 		$this->author = 'NoviSites.nl';
 		$this->need_instance = 0;
 
@@ -124,9 +124,7 @@ class Keendelivery extends Module
 		return parent::install()
 			&& $this->registerHook('header')
 			&& $this->registerHook('backOfficeHeader')
-			&& $this->registerHook('displayAdminOrder')
 			&& $this->registerHook('displayCarrierList')
-			//&& $this->registerHook('actionCartSave')
 			&& $this->registerHook('actionCarrierUpdate')
             && $this->registerHook('actionValidateOrder');
 	}
@@ -466,7 +464,7 @@ class Keendelivery extends Module
 			'id_language' => $this->context->language->id,
 		);
 
-		return $helper->generateForm(array($this->getConfigForm())).$helper->generateForm(array($this->getConfigFormAutoprocess())).$helper->generateForm(array($this->getConfigFormLastMile()));
+		return $helper->generateForm(array($this->getConfigForm())).$helper->generateForm(array($this->getConfigFormLastMile()));
 	}
 
 	/**
@@ -2027,11 +2025,6 @@ class Keendelivery extends Module
 			Configuration::updateValue('JETVERZENDT_CARRIER_ID', $params['carrier']->id);
 	}
 
-    public function hookDisplayAdminOrder()
-    {
-        return $this->getShipmentInfo(Tools::getValue('id_order'));
-    }
-
     public function hookactionValidateOrder($params){
         $order = $params['order'];
         $cart = $params['cart'];
@@ -2089,9 +2082,4 @@ class Keendelivery extends Module
             }
         }
     }
-
-    public function temp_upgrade(){
-
-    }
-
 }

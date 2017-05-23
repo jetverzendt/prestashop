@@ -93,12 +93,12 @@
 					{l s='Send with KeenDelivery' mod='keendelivery' }
 				</button>
 				{if $novijetverzendt_default == 0}
-					<div style="float: right">
-						<button type="submit" class="btn btn-default" name="submitUpdateAutoShippingStatus">
-							<i class="icon-check"></i>
-							{l s='Autosend with these settings' mod='keendelivery' }
-						</button>
-					</div>
+					{*<div style="float: right">*}
+						{*<button type="submit" class="btn btn-default" name="submitUpdateAutoShippingStatus">*}
+							{*<i class="icon-check"></i>*}
+							{*{l s='Autosend with these settings' mod='keendelivery' }*}
+						{*</button>*}
+					{*</div>*}
 				{/if}
 			</div>
 		</form>
